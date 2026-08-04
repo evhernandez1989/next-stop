@@ -3,6 +3,7 @@ import ReactDOM from "react-dom/client";
 import { Users, User, MapPin, ChevronRight, Dices } from "lucide-react";
 import SoloRoulette from "./SoloRoulette.jsx";
 import NextStopMultiplayer from "./NextStopMultiplayer.jsx";
+import "./index.css";
 
 const C = {
   page: "#0D1013", shell: "#20262E", shellBorder: "#0A0C0E", card: "#2E3742",
