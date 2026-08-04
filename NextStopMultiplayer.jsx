@@ -3,7 +3,7 @@ import { QRCodeSVG } from "qrcode.react";
 import {
   MapPin, Users, Copy, Check, Crown, ArrowLeft, RotateCw, Wifi,
   UserPlus, ChevronRight, Beef, Beer, Coffee, Fish, Pizza,
-  UtensilsCrossed, Sparkles, ThumbsUp, Trophy, Star, Phone, Navigation,
+  UtensilsCrossed, Sparkles, ThumbsUp, Trophy, Star, Phone, Navigation, Home,
 } from "lucide-react";
 import { useRoom } from "./useRoom";
 
@@ -80,7 +80,7 @@ function Roster({ players, count }) {
   );
 }
 
-export default function NextStopMultiplayer() {
+export default function NextStopMultiplayer({ onHome }) {
   const r = useRoom();
   const [name, setName] = useState("");
   const [screen, setScreen] = useState("entry"); // entry | joinEntry
@@ -106,6 +106,9 @@ export default function NextStopMultiplayer() {
       return (
         <Frame>
           <div className="px-5 pt-2 pb-4" style={{ borderBottom: `1px solid ${C.hairlineSoft}` }}>
+            <button onClick={onHome} className="flex items-center gap-1 text-[12px] font-mono mb-2" style={{ color: C.muted }}>
+              <Home size={12} /> modes
+            </button>
             <h1 className="font-display text-3xl font-bold tracking-tight leading-none" style={{ color: C.cream }}>NEXT STOP</h1>
             <p className="font-mono text-[11px] mt-1 tracking-widest uppercase" style={{ color: C.amber }}>Group Roulette</p>
           </div>
