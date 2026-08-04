@@ -1,17 +1,19 @@
-import { createClient } from "@supabase/supabase-js";
+// A stable id for this device/browser, so a person is one player and one vote.
+// Persisted in localStorage; falls back to an in-memory id if storage is blocked.
+let cached = null;
 
-// Vite exposes env vars prefixed with VITE_ to the browser.
-// Set these in .env.local and in your Vercel project settings.
-const url = import.meta.env.VITE_SUPABASE_URL;
-const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!url || !anonKey) {
-  // Helpful during setup — you'll see this in the browser console if env vars are missing.
-  console.warn(
-    "[Next Stop] Missing Supabase env vars. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY."
-  );
+export function getDeviceId() {
+  if (cached) return cached;
+  try {
+    let id = localStorage.getItem("nextstop_device");
+    if (!id) {
+      id = (crypto?.randomUUID?.() || "dev-" + Math.random().toString(36).slice(2));
+      localStorage.setItem("nextstop_device", id);
+    }
+    cached = id;
+    return id;
+  } catch {
+    cached = "anon-" + Math.random().toString(36).slice(2);
+    return cached;
+  }
 }
-
-export const supabase = createClient(url, anonKey, {
-  realtime: { params: { eventsPerSecond: 10 } },
-});

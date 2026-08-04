@@ -1,69 +1,151 @@
-// Snapshot data near Ingalls, IN. Replace loadRestaurants() with a live
-// Google Places call (via a serverless function that holds your API key)
-// when you're ready — the rest of the app only depends on the shape below.
+import { useState, useEffect, useRef, useCallback } from "react";
+import { supabase } from "./supabase";
+import { getDeviceId } from "./deviceId";
+import { DATA, pickN } from "./restaurants";
 
-const USER = { lat: 39.94631853967538, lng: -85.81967778748043 };
-
-const RAW = [
-  { name: "The Grill-A", cuisine: "American", rating: 4.7, ratingCount: 306, price: 2, address: "4 W Main St, Markleville, IN", phone: "+17655335299", lat: 39.9774008, lng: -85.6147165 },
-  { name: "Taylor's Bar & Table", cuisine: "American", rating: 4.5, ratingCount: 858, price: 2, address: "8015 S Indiana 13 Ste 3, Pendleton, IN", phone: "+13177477820", lat: 39.98736, lng: -85.843986 },
-  { name: "Du Lit", cuisine: "Eclectic", rating: 4.8, ratingCount: 274, price: 2, address: "101 W Broadway St, Fortville, IN", phone: "+13175059194", lat: 39.9316623, lng: -85.8479369 },
-  { name: "Bourbon on the Falls", cuisine: "American", rating: 4.4, ratingCount: 114, price: 2, address: "250 Reformatory Rd, Pendleton, IN", phone: "+17652219080", lat: 39.9899668, lng: -85.7554428 },
-  { name: "Salt at Geist", cuisine: "Seafood", rating: 4.8, ratingCount: 981, price: 3, address: "10158 Brooks School Rd, Fishers, IN", phone: "+13173957561", lat: 39.9356666, lng: -85.9480053 },
-  { name: "FoxGardin Kitchen & Ale", cuisine: "American", rating: 4.7, ratingCount: 1445, price: 2, address: "215 S Main St, Fortville, IN", phone: "+13174854085", lat: 39.9328977, lng: -85.8484587 },
-  { name: "The Crossings Restaurant", cuisine: "Breakfast", rating: 4.7, ratingCount: 325, price: 2, address: "8424 S State Rd 67, Pendleton, IN", phone: "+17652211200", lat: 39.9826278, lng: -85.7526852 },
-  { name: "Invited To The Table", cuisine: "Cafe & Brunch", rating: 4.8, ratingCount: 137, price: 2, address: "118 N Pendleton Ave, Pendleton, IN", phone: "+17652219470", lat: 40.0032371, lng: -85.7452918 },
-  { name: "Taxman Fortville", cuisine: "Brewpub", rating: 4.6, ratingCount: 1908, price: 2, address: "29 S Main St, Fortville, IN", phone: "+13175593696", lat: 39.9335792, lng: -85.849132 },
-  { name: "Aspen Creek Grill", cuisine: "Steakhouse", rating: 4.7, ratingCount: 5989, price: 2, address: "13489 Tegler Dr, Noblesville, IN", phone: "+13175593300", lat: 39.9933662, lng: -85.9250644 },
-  { name: "Wolfies Grill", cuisine: "American", rating: 4.5, ratingCount: 322, price: 2, address: "710 W State St, Pendleton, IN", phone: "+17652219405", lat: 40.0047786, lng: -85.7670953 },
-  { name: "The Stable", cuisine: "Brewery & Grill", rating: 4.3, ratingCount: 146, price: 2, address: "105 E State St, Pendleton, IN", phone: "+17652219301", lat: 40.0025982, lng: -85.7453432 },
-  { name: "INItaly Pizzeria & Bar", cuisine: "Italian", rating: 4.4, ratingCount: 135, price: 2, address: "107 E State St, Pendleton, IN", phone: "+17652211049", lat: 40.0026579, lng: -85.7452537 },
-  { name: "Michaels Bistro & Wine Bar", cuisine: "American", rating: 5.0, ratingCount: 49, price: 3, address: "104 W State St, Pendleton, IN", phone: "+17652219262", lat: 40.0025741, lng: -85.7460183 },
-  { name: "1925 PubHouse Grandview", cuisine: "American", rating: 4.5, ratingCount: 490, price: 2, address: "1905 Northshore Exd, Anderson, IN", phone: "+17652745016", lat: 40.1142005, lng: -85.7040557 },
-  { name: "The Lemon Drop", cuisine: "Diner", rating: 4.7, ratingCount: 1485, price: 1, address: "1701 Mounds Rd, Anderson, IN", phone: "+17656449055", lat: 40.0943272, lng: -85.6593915 },
-  { name: "Montana Mike's Steakhouse", cuisine: "Steakhouse", rating: 4.2, ratingCount: 2732, price: 2, address: "6370 S Scatterfield Rd, Anderson, IN", phone: "+17656498000", lat: 40.0517098, lng: -85.6521473 },
-  { name: "Creatures of Habit Brewing Co", cuisine: "Brewpub", rating: 4.7, ratingCount: 221, price: 1, address: "1031 Meridian St, Anderson, IN", phone: "+17654000116", lat: 40.1053758, lng: -85.6793333 },
-  { name: "Tony's Family Diner", cuisine: "Diner", rating: 4.3, ratingCount: 178, price: 1, address: "2460 E Co Rd 67, Chesterfield, IN", phone: "+17654005310", lat: 40.0833579, lng: -85.6324546 },
-  { name: "Carter's Kitchen", cuisine: "Breakfast", rating: 4.5, ratingCount: 104, price: 1, address: "333 Jackson St, Anderson, IN", phone: "+17656354517", lat: 40.1120382, lng: -85.6807818 },
-  { name: "Texas Roadhouse", cuisine: "Steakhouse", rating: 4.2, ratingCount: 3502, price: 2, address: "1925 E 60th St, Anderson, IN", phone: "+17656492637", lat: 40.0544703, lng: -85.6544562 },
-];
-
-export const PRICE_TIERS = [
-  { id: "budget", label: "Budget", range: "$8\u2013\u200913", match: (r) => r.price === 1 },
-  { id: "mid", label: "Mid-range", range: "$14\u2013\u200924", match: (r) => r.price === 2 },
-  { id: "splurge", label: "Splurge", range: "$25+", match: (r) => r.price === 3 },
-];
-
-function haversineMiles(a, b) {
-  const R = 3958.8;
-  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
-  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
-  const lat1 = (a.lat * Math.PI) / 180;
-  const lat2 = (b.lat * Math.PI) / 180;
-  const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.asin(Math.sqrt(h));
+const CODE_CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+function randomCode() {
+  let s = "";
+  for (let i = 0; i < 4; i++) s += CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)];
+  return "NEXT-" + s;
 }
 
-export const DATA = RAW.map((r) => {
-  const tier = PRICE_TIERS.find((t) => t.match(r));
-  return { ...r, distance: haversineMiles(USER, r), priceRange: tier.range, priceTier: tier.id };
-}).sort((a, b) => a.distance - b.distance);
+// Owns all realtime state for one room. Returns the room row, roster, votes,
+// and the actions the UI calls. Screens stay presentational.
+export function useRoom() {
+  const deviceId = getDeviceId();
+  const [code, setCode] = useState(null);
+  const [room, setRoom] = useState(null);      // rooms row
+  const [players, setPlayers] = useState([]);  // players rows
+  const [votes, setVotes] = useState([]);      // votes rows
+  const [error, setError] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const channelRef = useRef(null);
 
-// Placeholder for the future live source. Kept async so swapping in a fetch
-// later doesn't change call sites.
-export async function loadRestaurants() {
-  return DATA;
-}
+  const isHost = !!room && room.host_id === deviceId;
+  const myVote = votes.find((v) => v.device_id === deviceId)?.choice || null;
 
-// Pick n distinct random restaurants for a spin.
-export function pickN(list, n) {
-  const picks = [];
-  const seen = new Set();
-  let guard = 0;
-  while (picks.length < Math.min(n, list.length) && guard < 100) {
-    const c = list[Math.floor(Math.random() * list.length)];
-    if (!seen.has(c.name)) { seen.add(c.name); picks.push(c); }
-    guard++;
+  // ── Load current snapshot of a room, then subscribe to live changes ──
+  useEffect(() => {
+    if (!code) return;
+    let cancelled = false;
+
+    async function loadAll() {
+      const [{ data: r }, { data: pl }, { data: vt }] = await Promise.all([
+        supabase.from("rooms").select("*").eq("code", code).maybeSingle(),
+        supabase.from("players").select("*").eq("room_code", code).order("joined_at"),
+        supabase.from("votes").select("*").eq("room_code", code),
+      ]);
+      if (cancelled) return;
+      setRoom(r || null);
+      setPlayers(pl || []);
+      setVotes(vt || []);
+    }
+    loadAll();
+
+    const channel = supabase
+      .channel(`room:${code}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "rooms", filter: `code=eq.${code}` },
+        (payload) => setRoom(payload.eventType === "DELETE" ? null : payload.new))
+      .on("postgres_changes", { event: "*", schema: "public", table: "players", filter: `room_code=eq.${code}` },
+        () => refreshPlayers(code))
+      .on("postgres_changes", { event: "*", schema: "public", table: "votes", filter: `room_code=eq.${code}` },
+        () => refreshVotes(code))
+      .subscribe();
+
+    channelRef.current = channel;
+    return () => {
+      cancelled = true;
+      supabase.removeChannel(channel);
+      channelRef.current = null;
+    };
+  }, [code]);
+
+  async function refreshPlayers(c) {
+    const { data } = await supabase.from("players").select("*").eq("room_code", c).order("joined_at");
+    setPlayers(data || []);
   }
-  return picks;
+  async function refreshVotes(c) {
+    const { data } = await supabase.from("votes").select("*").eq("room_code", c);
+    setVotes(data || []);
+  }
+
+  // ── Host: create a new room ──
+  const createRoom = useCallback(async (name) => {
+    setBusy(true); setError(null);
+    try {
+      let c = randomCode();
+      // Retry once on the rare code collision.
+      let insert = await supabase.from("rooms").insert({ code: c, host_id: deviceId, status: "lobby" });
+      if (insert.error) { c = randomCode(); insert = await supabase.from("rooms").insert({ code: c, host_id: deviceId, status: "lobby" }); }
+      if (insert.error) throw insert.error;
+      await supabase.from("players").upsert({ room_code: c, device_id: deviceId, name, is_host: true });
+      setCode(c);
+      return c;
+    } catch (e) {
+      setError("Couldn't create the room. Try again.");
+      return null;
+    } finally { setBusy(false); }
+  }, [deviceId]);
+
+  // ── Player: join an existing room ──
+  const joinRoom = useCallback(async (rawCode, name) => {
+    setBusy(true); setError(null);
+    const c = rawCode.toUpperCase().startsWith("NEXT-") ? rawCode.toUpperCase() : "NEXT-" + rawCode.toUpperCase();
+    try {
+      const { data: r } = await supabase.from("rooms").select("code").eq("code", c).maybeSingle();
+      if (!r) { setError("No room with that code."); return null; }
+      await supabase.from("players").upsert({ room_code: c, device_id: deviceId, name, is_host: false });
+      setCode(c);
+      return c;
+    } catch (e) {
+      setError("Couldn't join. Check the code and try again.");
+      return null;
+    } finally { setBusy(false); }
+  }, [deviceId]);
+
+  // ── Host: spin — pick 3, move room to voting, clear old votes ──
+  const spin = useCallback(async () => {
+    if (!code) return;
+    const candidates = pickN(DATA, 3);
+    await supabase.from("votes").delete().eq("room_code", code);
+    await supabase.from("rooms").update({ candidates, winner: null, status: "voting" }).eq("code", code);
+  }, [code]);
+
+  // ── Any player: cast/'change vote (upsert keeps it one-per-device) ──
+  const castVote = useCallback(async (choice) => {
+    if (!code) return;
+    await supabase.from("votes").upsert({ room_code: code, device_id: deviceId, choice, updated_at: new Date().toISOString() });
+  }, [code, deviceId]);
+
+  // ── Host: lock in — tally votes, set winner, reveal to everyone ──
+  const lockIn = useCallback(async () => {
+    if (!code || !room) return;
+    const tally = {};
+    votes.forEach((v) => { tally[v.choice] = (tally[v.choice] || 0) + 1; });
+    const cands = room.candidates || [];
+    let winnerName = cands[0]?.name;
+    let best = -1;
+    cands.forEach((c) => { const n = tally[c.name] || 0; if (n > best) { best = n; winnerName = c.name; } });
+    const winner = cands.find((c) => c.name === winnerName) || cands[0];
+    await supabase.from("rooms").update({ winner, status: "revealed" }).eq("code", code);
+  }, [code, room, votes]);
+
+  // ── Host: back to lobby / spin again ──
+  const resetToLobby = useCallback(async () => {
+    if (!code) return;
+    await supabase.from("votes").delete().eq("room_code", code);
+    await supabase.from("rooms").update({ candidates: [], winner: null, status: "lobby" }).eq("code", code);
+  }, [code]);
+
+  // ── Leave the room (remove this player) ──
+  const leaveRoom = useCallback(async () => {
+    if (code) await supabase.from("players").delete().eq("room_code", code).eq("device_id", deviceId);
+    setCode(null); setRoom(null); setPlayers([]); setVotes([]);
+  }, [code, deviceId]);
+
+  return {
+    deviceId, code, room, players, votes, error, busy, isHost, myVote,
+    createRoom, joinRoom, spin, castVote, lockIn, resetToLobby, leaveRoom,
+  };
 }
