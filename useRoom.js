@@ -104,18 +104,20 @@ export function useRoom() {
     } finally { setBusy(false); }
   }, [deviceId]);
 
-  // ── Host: spin — everyone sees a 5s spin, then voting opens ──
+  // ── Host: spin — everyone enters the spin phase; the foreground client advances it ──
   const spin = useCallback(async (poolList) => {
     if (!code) return;
     const source = Array.isArray(poolList) && poolList.length ? poolList : DATA;
     const candidates = pickN(source, 3);
     await supabase.from("votes").delete().eq("room_code", code);
     await supabase.from("rooms").update({ candidates, winner: null, status: "spinning" }).eq("code", code);
-    // After the spin animation, open voting — but only if still spinning
-    // (guards against the host returning to the lobby mid-spin).
-    setTimeout(() => {
-      supabase.from("rooms").update({ status: "voting" }).eq("code", code).eq("status", "spinning");
-    }, 5000);
+  }, [code]);
+
+  // Open voting after the spin. Guarded so it only fires while still spinning;
+  // any foreground client can call it and the first one wins (others no-op).
+  const endSpin = useCallback(async () => {
+    if (!code) return;
+    await supabase.from("rooms").update({ status: "voting" }).eq("code", code).eq("status", "spinning");
   }, [code]);
 
   // ── Any player: cast/'change vote (upsert keeps it one-per-device) ──
@@ -152,6 +154,6 @@ export function useRoom() {
 
   return {
     deviceId, code, room, players, votes, error, busy, isHost, myVote,
-    createRoom, joinRoom, spin, castVote, lockIn, resetToLobby, leaveRoom,
+    createRoom, joinRoom, spin, endSpin, castVote, lockIn, resetToLobby, leaveRoom,
   };
 }

@@ -217,6 +217,17 @@ export default function NextStopMultiplayer({ onHome }) {
 
   const hostPool = filterRestaurants({ maxDistance, cuisineFilter, priceFilter, tiers });
 
+  // Whichever device is on-screen runs the spin countdown and opens voting.
+  // Foreground timers fire reliably (and resume on return), so the room never
+  // gets stuck spinning the way a single host-side timer could.
+  const roomStatus = r.room?.status;
+  useEffect(() => {
+    if (roomStatus !== "spinning") return;
+    const t = setTimeout(() => { r.endSpin(); }, 5000);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roomStatus]);
+
   function toggleSet(setFn, current, value) {
     const next = new Set(current);
     next.has(value) ? next.delete(value) : next.add(value);
