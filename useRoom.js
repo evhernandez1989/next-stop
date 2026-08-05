@@ -104,10 +104,11 @@ export function useRoom() {
     } finally { setBusy(false); }
   }, [deviceId]);
 
-  // ── Host: spin — pick 3, move room to voting, clear old votes ──
-  const spin = useCallback(async () => {
+  // ── Host: spin — pick 3 (from the host's filtered pool if given), move room to voting, clear old votes ──
+  const spin = useCallback(async (poolList) => {
     if (!code) return;
-    const candidates = pickN(DATA, 3);
+    const source = Array.isArray(poolList) && poolList.length ? poolList : DATA;
+    const candidates = pickN(source, 3);
     await supabase.from("votes").delete().eq("room_code", code);
     await supabase.from("rooms").update({ candidates, winner: null, status: "voting" }).eq("code", code);
   }, [code]);

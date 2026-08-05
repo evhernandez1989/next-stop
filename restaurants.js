@@ -44,10 +44,40 @@ function haversineMiles(a, b) {
   return R * 2 * Math.asin(Math.sqrt(h));
 }
 
+const PRICE_EST = { 1: 10, 2: 19, 3: 30 };
+
 export const DATA = RAW.map((r) => {
   const tier = PRICE_TIERS.find((t) => t.match(r));
-  return { ...r, distance: haversineMiles(USER, r), priceRange: tier.range, priceTier: tier.id };
+  return { ...r, distance: haversineMiles(USER, r), priceRange: tier.range, priceTier: tier.id, estCost: PRICE_EST[r.price] };
 }).sort((a, b) => a.distance - b.distance);
+
+export const CUISINES = [...new Set(DATA.map((r) => r.cuisine))].sort();
+
+// Editable price tiers shared by solo and group: users set their own dollar
+// boundaries, and each restaurant is bucketed by its estimated per-person cost.
+export const DEFAULT_TIERS = [
+  { id: "budget", label: "Budget", min: 8, max: 13 },
+  { id: "mid", label: "Mid-range", min: 14, max: 24 },
+  { id: "splurge", label: "Splurge", min: 25, max: 9999 },
+];
+export function fmtTier(t) {
+  return t.max >= 9999 ? `$${t.min}+` : `$${t.min}\u2013${t.max}`;
+}
+
+// Apply cuisine / price-tier / distance filters to the shared list.
+export function filterRestaurants({ maxDistance, cuisineFilter, priceFilter, tiers }) {
+  return DATA.filter((r) => {
+    if (maxDistance != null && r.distance > maxDistance) return false;
+    if (cuisineFilter && cuisineFilter.size > 0 && !cuisineFilter.has(r.cuisine)) return false;
+    if (priceFilter && priceFilter.size > 0) {
+      const inRange = (tiers || DEFAULT_TIERS).some(
+        (t) => priceFilter.has(t.id) && r.estCost >= t.min && r.estCost <= t.max
+      );
+      if (!inRange) return false;
+    }
+    return true;
+  });
+}
 
 // Placeholder for the future live source. Kept async so swapping in a fetch
 // later doesn't change call sites.

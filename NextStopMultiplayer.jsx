@@ -2,10 +2,11 @@ import { useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import {
   MapPin, Users, Copy, Check, Crown, ArrowLeft, RotateCw, Wifi,
-  UserPlus, ChevronRight, Beef, Beer, Coffee, Fish, Pizza,
+  UserPlus, ChevronRight, ChevronDown, Beef, Beer, Coffee, Fish, Pizza,
   UtensilsCrossed, Sparkles, ThumbsUp, Trophy, Star, Phone, Navigation, Home,
 } from "lucide-react";
 import { useRoom } from "./useRoom";
+import { DATA, CUISINES, DEFAULT_TIERS, fmtTier, filterRestaurants } from "./restaurants";
 
 const C = {
   page: "#0D1013", shell: "#20262E", shellBorder: "#0A0C0E", card: "#2E3742",
@@ -80,6 +81,96 @@ function Roster({ players, count }) {
   );
 }
 
+function HostFilters({
+  filtersOpen, setFiltersOpen, cuisineFilter, setCuisineFilter, priceFilter, setPriceFilter,
+  maxDistance, setMaxDistance, tiers, setTiers, priceEdit, setPriceEdit, toggleSet, updateTier, count,
+}) {
+  const chipOn = { backgroundColor: C.maroon, border: `1px solid ${C.maroon}`, color: C.cream };
+  const chipOff = { backgroundColor: "transparent", border: `1px solid ${C.hairline}`, color: C.creamDim };
+  const numStyle = { backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` };
+  return (
+    <div className="px-5 py-3" style={{ borderTop: `1px solid ${C.hairlineSoft}` }}>
+      <button onClick={() => setFiltersOpen((o) => !o)} className="w-full flex items-center justify-between text-[13px] font-display font-medium tracking-wide" style={{ color: C.cream }}>
+        <span>FILTERS <span className="font-mono text-[11px]" style={{ color: C.muted }}>· {count} in range</span></span>
+        <ChevronDown size={16} className={`transition-transform ${filtersOpen ? "rotate-180" : ""}`} />
+      </button>
+      {filtersOpen && (
+        <div className="mt-3 space-y-3">
+          <div>
+            <p className="text-[11px] font-mono mb-1.5 uppercase tracking-wide" style={{ color: C.muted }}>Cuisine</p>
+            <div className="flex flex-wrap gap-1.5">
+              {CUISINES.map((c) => (
+                <button key={c} onClick={() => toggleSet(setCuisineFilter, cuisineFilter, c)}
+                  className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full font-body transition-colors"
+                  style={cuisineFilter.has(c) ? { ...chipOn, fontWeight: 600 } : chipOff}>
+                  <CuisineIcon cuisine={c} size={11} />{c}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="text-[11px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>
+                Price / person <span style={{ textTransform: "none", opacity: 0.8 }}>· tap any that apply</span>
+              </p>
+              <button onClick={() => setPriceEdit((e) => !e)} className="text-[11px] font-mono" style={{ color: C.amber }}>{priceEdit ? "done" : "edit"}</button>
+            </div>
+            <div className="flex gap-1.5">
+              {tiers.map((t) => (
+                <button key={t.id} onClick={() => toggleSet(setPriceFilter, priceFilter, t.id)}
+                  className="text-left text-[11px] px-2.5 py-1.5 rounded-lg font-body transition-colors"
+                  style={priceFilter.has(t.id) ? { ...chipOn, fontWeight: 600 } : chipOff}>
+                  <div className="font-display leading-tight">{t.label}</div>
+                  <div className="font-mono text-[10px] opacity-80 leading-tight">{fmtTier(t)}</div>
+                </button>
+              ))}
+            </div>
+            {priceEdit && (
+              <div className="mt-2 space-y-2 rounded-lg p-2.5" style={{ backgroundColor: C.fill }}>
+                <p className="text-[10px] font-body" style={{ color: C.muted }}>Set your own dollar ranges per person.</p>
+                {tiers.map((t, i) => (
+                  <div key={t.id} className="flex items-center gap-2">
+                    <span className="w-16 text-[11px] font-display shrink-0" style={{ color: C.cream }}>{t.label}</span>
+                    <span className="text-[11px] font-mono" style={{ color: C.muted }}>$</span>
+                    <input type="number" inputMode="numeric" min="0" value={t.min}
+                      onChange={(e) => updateTier(i, "min", e.target.value)}
+                      className="w-14 text-right font-mono text-[12px] px-2 py-1 rounded-md outline-none" style={numStyle} />
+                    {t.max >= 9999 ? (
+                      <span className="text-[11px] font-mono" style={{ color: C.muted }}>and up</span>
+                    ) : (
+                      <>
+                        <span className="text-[11px] font-mono" style={{ color: C.muted }}>to $</span>
+                        <input type="number" inputMode="numeric" min="0" value={t.max}
+                          onChange={(e) => updateTier(i, "max", e.target.value)}
+                          className="w-14 text-right font-mono text-[12px] px-2 py-1 rounded-md outline-none" style={numStyle} />
+                      </>
+                    )}
+                  </div>
+                ))}
+                <button onClick={() => setTiers(DEFAULT_TIERS)} className="text-[10px] font-mono underline" style={{ color: C.muted }}>reset to defaults</button>
+              </div>
+            )}
+          </div>
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="text-[11px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>Max distance</p>
+              <div className="flex items-center gap-1">
+                <input type="number" inputMode="numeric" min="1" max="50" value={maxDistance}
+                  onChange={(e) => { const raw = e.target.value; if (raw === "") { setMaxDistance(1); return; } setMaxDistance(Math.min(50, Math.max(1, Number(raw) || 1))); }}
+                  className="w-14 text-right font-mono text-[12px] px-2 py-1 rounded-md outline-none" style={numStyle} />
+                <span className="text-[11px] font-mono" style={{ color: C.muted }}>mi</span>
+              </div>
+            </div>
+            <input type="range" min="1" max="50" value={maxDistance}
+              onChange={(e) => setMaxDistance(Number(e.target.value))}
+              className="w-full" style={{ accentColor: C.maroon }} />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function NextStopMultiplayer({ onHome }) {
   const r = useRoom();
   const [name, setName] = useState("");
@@ -88,6 +179,26 @@ export default function NextStopMultiplayer({ onHome }) {
     try { return (new URLSearchParams(window.location.search).get("room") || "").replace(/^NEXT-/i, ""); } catch { return ""; }
   });
   const [copied, setCopied] = useState(false);
+
+  // Host filters (mirrors solo): applied when the host spins.
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [cuisineFilter, setCuisineFilter] = useState(new Set());
+  const [priceFilter, setPriceFilter] = useState(new Set());
+  const [maxDistance, setMaxDistance] = useState(25);
+  const [tiers, setTiers] = useState(DEFAULT_TIERS);
+  const [priceEdit, setPriceEdit] = useState(false);
+
+  const hostPool = filterRestaurants({ maxDistance, cuisineFilter, priceFilter, tiers });
+
+  function toggleSet(setFn, current, value) {
+    const next = new Set(current);
+    next.has(value) ? next.delete(value) : next.add(value);
+    setFn(next);
+  }
+  function updateTier(i, key, raw) {
+    const v = raw === "" ? 0 : Math.max(0, Number(raw) || 0);
+    setTiers((cur) => cur.map((t, idx) => (idx === i ? { ...t, [key]: v } : t)));
+  }
 
   // If a ?room= link brought them here and they haven't joined, send them to join.
   const prefilledFromLink = joinInput.length > 0 && !r.code && screen === "entry";
@@ -216,11 +327,20 @@ export default function NextStopMultiplayer({ onHome }) {
               </button>
             </div>
             <Roster players={r.players} count={playerCount} />
+            <HostFilters
+              filtersOpen={filtersOpen} setFiltersOpen={setFiltersOpen}
+              cuisineFilter={cuisineFilter} setCuisineFilter={setCuisineFilter}
+              priceFilter={priceFilter} setPriceFilter={setPriceFilter}
+              maxDistance={maxDistance} setMaxDistance={setMaxDistance}
+              tiers={tiers} setTiers={setTiers} priceEdit={priceEdit} setPriceEdit={setPriceEdit}
+              toggleSet={toggleSet} updateTier={updateTier} count={hostPool.length}
+            />
             <div className="px-5 pt-3 pb-6">
-              <button onClick={r.spin}
+              <button onClick={() => hostPool.length && r.spin(hostPool)}
+                disabled={hostPool.length === 0}
                 className="w-full flex items-center justify-center gap-2 font-display font-semibold tracking-wide py-3 rounded-lg text-sm active:scale-[0.98] transition-transform"
-                style={{ backgroundColor: C.maroon, color: C.cream }}>
-                <RotateCw size={16} /> START SPINNING
+                style={hostPool.length === 0 ? { backgroundColor: "#3A3D42", color: "#7A7F87" } : { backgroundColor: C.maroon, color: C.cream }}>
+                <RotateCw size={16} /> {hostPool.length === 0 ? "NO MATCHES — ADJUST FILTERS" : "START SPINNING"}
               </button>
               <p className="text-center text-[10px] font-mono mt-2" style={{ color: C.muted }}>everyone votes on their own phone</p>
             </div>
@@ -262,8 +382,8 @@ export default function NextStopMultiplayer({ onHome }) {
               return (
                 <button key={c.name} onClick={() => r.castVote(c.name)}
                   className="w-full text-left rounded-lg p-3 relative overflow-hidden active:scale-[0.99] transition-transform"
-                  style={{ backgroundColor: C.card, border: mine ? `1px solid ${C.amber}` : `1px solid ${C.hairline}` }}>
-                  <div className="absolute inset-y-0 left-0" style={{ width: `${pct}%`, backgroundColor: "rgba(242,183,5,0.12)", transition: "width 0.3s" }} />
+                  style={{ backgroundColor: C.card, border: mine ? `1px solid ${C.maroon}` : `1px solid ${C.hairline}` }}>
+                  <div className="absolute inset-y-0 left-0" style={{ width: `${pct}%`, backgroundColor: "rgba(122,46,46,0.28)", transition: "width 0.3s" }} />
                   <div className="relative flex items-center justify-between gap-2">
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
@@ -272,7 +392,7 @@ export default function NextStopMultiplayer({ onHome }) {
                       </div>
                       <p className="text-[10px] font-mono mt-0.5" style={{ color: C.creamDim }}>{c.priceRange} &middot; {c.distance.toFixed(1)} mi &middot; {c.rating}★</p>
                     </div>
-                    <span className="flex items-center gap-1 text-[13px] font-display font-semibold shrink-0" style={{ color: mine ? C.amber : C.creamDim }}>
+                    <span className="flex items-center gap-1 text-[13px] font-display font-semibold shrink-0" style={{ color: mine ? C.cream : C.creamDim }}>
                       <ThumbsUp size={13} /> {count}
                     </span>
                   </div>
@@ -340,7 +460,7 @@ export default function NextStopMultiplayer({ onHome }) {
       )}
       {r.isHost && (
         <div className="px-5 pt-2 pb-6 space-y-2">
-          <button onClick={r.spin} className="w-full flex items-center justify-center gap-2 font-display font-semibold py-3 rounded-lg text-sm active:scale-[0.98] transition-transform" style={{ backgroundColor: C.maroon, color: C.cream }}>
+          <button onClick={() => hostPool.length && r.spin(hostPool)} className="w-full flex items-center justify-center gap-2 font-display font-semibold py-3 rounded-lg text-sm active:scale-[0.98] transition-transform" style={{ backgroundColor: C.maroon, color: C.cream }}>
             <RotateCw size={15} /> SPIN AGAIN
           </button>
           <button onClick={r.resetToLobby} className="w-full flex items-center justify-center gap-2 font-display font-medium py-2.5 rounded-lg text-[13px]" style={{ backgroundColor: C.fill, color: C.creamDim, border: `1px solid ${C.hairline}` }}>
