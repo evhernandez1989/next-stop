@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import {
   MapPin, Users, Copy, Check, Crown, ArrowLeft, RotateCw, Wifi,
@@ -26,6 +26,33 @@ const AVATAR_COLORS = ["#7A2E2E", "#2E6B7A", "#7A5C2E", "#4A2E7A", "#2E7A4A"];
 function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 function initials(name) { return (name || "?").trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase(); }
 function CuisineIcon({ cuisine, size = 12, style }) { const Icon = CUISINE_ICONS[cuisine] || UtensilsCrossed; return <Icon size={size} style={style} />; }
+
+function Flap({ char }) {
+  return (
+    <span className="inline-flex items-center justify-center w-[1.05em] h-[1.3em] mx-[1px] font-mono font-bold rounded-[2px] relative overflow-hidden"
+      style={{ backgroundColor: C.flap, color: C.amber, boxShadow: "inset 0 -1px 0 rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)" }}>
+      {char}
+    </span>
+  );
+}
+
+function Board({ text }) {
+  const padded = text.toUpperCase().padEnd(22, " ").slice(0, 22);
+  return (
+    <div className="flex flex-wrap justify-center gap-y-1 px-2 py-4 rounded-lg" style={{ backgroundColor: C.board, border: "1px solid rgba(0,0,0,0.4)" }}>
+      {padded.split("").map((c, i) => (<Flap key={i} char={c === " " ? "\u00A0" : c} />))}
+    </div>
+  );
+}
+
+function SpinBoard() {
+  const [txt, setTxt] = useState("SPINNING");
+  useEffect(() => {
+    const id = setInterval(() => setTxt(DATA[Math.floor(Math.random() * DATA.length)].name), 90);
+    return () => clearInterval(id);
+  }, []);
+  return <Board text={txt} />;
+}
 
 function Frame({ children }) {
   return (
@@ -357,6 +384,21 @@ export default function NextStopMultiplayer({ onHome }) {
             <Roster players={r.players} count={playerCount} />
           </>
         )}
+      </Frame>
+    );
+  }
+
+  if (status === "spinning") {
+    return (
+      <Frame>
+        <RoomHeader label={r.code} connected="LIVE" />
+        <div className="px-5 pt-8 pb-3 text-center">
+          <p className="font-mono text-[11px] tracking-widest uppercase" style={{ color: C.amber }}>Spinning…</p>
+        </div>
+        <div className="px-5 pb-4"><SpinBoard /></div>
+        <p className="px-5 pb-8 text-center text-[12px] font-body" style={{ color: C.creamDim }}>
+          Picking three spots for the group — get ready to vote.
+        </p>
       </Frame>
     );
   }

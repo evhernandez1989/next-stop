@@ -104,13 +104,18 @@ export function useRoom() {
     } finally { setBusy(false); }
   }, [deviceId]);
 
-  // ── Host: spin — pick 3 (from the host's filtered pool if given), move room to voting, clear old votes ──
+  // ── Host: spin — everyone sees a 5s spin, then voting opens ──
   const spin = useCallback(async (poolList) => {
     if (!code) return;
     const source = Array.isArray(poolList) && poolList.length ? poolList : DATA;
     const candidates = pickN(source, 3);
     await supabase.from("votes").delete().eq("room_code", code);
-    await supabase.from("rooms").update({ candidates, winner: null, status: "voting" }).eq("code", code);
+    await supabase.from("rooms").update({ candidates, winner: null, status: "spinning" }).eq("code", code);
+    // After the spin animation, open voting — but only if still spinning
+    // (guards against the host returning to the lobby mid-spin).
+    setTimeout(() => {
+      supabase.from("rooms").update({ status: "voting" }).eq("code", code).eq("status", "spinning");
+    }, 5000);
   }, [code]);
 
   // ── Any player: cast/'change vote (upsert keeps it one-per-device) ──
