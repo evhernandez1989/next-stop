@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import {
   MapPin, Users, Copy, Check, Crown, ArrowLeft, RotateCw, Wifi,
@@ -6,7 +6,8 @@ import {
   UtensilsCrossed, Sparkles, ThumbsUp, Trophy, Star, Phone, Navigation, Home,
 } from "lucide-react";
 import { useRoom } from "./useRoom";
-import { DATA, CUISINES, DEFAULT_TIERS, fmtTier, filterRestaurants } from "./restaurants";
+import { useRestaurants } from "./useRestaurants";
+import { DATA, DEFAULT_TIERS, fmtTier } from "./restaurants";
 
 const C = {
   page: "#0D1013", shell: "#20262E", shellBorder: "#0A0C0E", card: "#2E3742",
@@ -45,11 +46,13 @@ function Board({ text }) {
   );
 }
 
-function SpinBoard() {
+function SpinBoard({ names }) {
+  const pool = names && names.length ? names : DATA.map((d) => d.name);
   const [txt, setTxt] = useState("SPINNING");
   useEffect(() => {
-    const id = setInterval(() => setTxt(DATA[Math.floor(Math.random() * DATA.length)].name), 90);
+    const id = setInterval(() => setTxt(pool[Math.floor(Math.random() * pool.length)]), 90);
     return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return <Board text={txt} />;
 }
@@ -109,7 +112,7 @@ function Roster({ players, count }) {
 }
 
 function HostFilters({
-  filtersOpen, setFiltersOpen, cuisineFilter, setCuisineFilter, priceFilter, setPriceFilter,
+  filtersOpen, setFiltersOpen, cuisines, cuisineFilter, setCuisineFilter, priceFilter, setPriceFilter,
   maxDistance, setMaxDistance, tiers, setTiers, priceEdit, setPriceEdit, toggleSet, updateTier, count,
 }) {
   const chipOn = { backgroundColor: C.maroon, border: `1px solid ${C.maroon}`, color: C.cream };
@@ -126,7 +129,7 @@ function HostFilters({
           <div>
             <p className="text-[11px] font-mono mb-1.5 uppercase tracking-wide" style={{ color: C.muted }}>Cuisine</p>
             <div className="flex flex-wrap gap-1.5">
-              {CUISINES.map((c) => (
+              {cuisines.map((c) => (
                 <button key={c} onClick={() => toggleSet(setCuisineFilter, cuisineFilter, c)}
                   className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full font-body transition-colors"
                   style={cuisineFilter.has(c) ? { ...chipOn, fontWeight: 600 } : chipOff}>
@@ -207,6 +210,11 @@ export default function NextStopMultiplayer({ onHome }) {
   });
   const [copied, setCopied] = useState(false);
 
+  // Host: live restaurants from device location (or a typed city).
+  const { restaurants, loading, error: locError, label, needCity, setCity, useMyLocation } = useRestaurants();
+  const [showCity, setShowCity] = useState(false);
+  const [cityInput, setCityInput] = useState("");
+
   // Host filters (mirrors solo): applied when the host spins.
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [cuisineFilter, setCuisineFilter] = useState(new Set());
@@ -215,7 +223,16 @@ export default function NextStopMultiplayer({ onHome }) {
   const [tiers, setTiers] = useState(DEFAULT_TIERS);
   const [priceEdit, setPriceEdit] = useState(false);
 
-  const hostPool = filterRestaurants({ maxDistance, cuisineFilter, priceFilter, tiers });
+  const cuisines = useMemo(() => [...new Set(restaurants.map((x) => x.cuisine))].sort(), [restaurants]);
+  const hostPool = restaurants.filter((x) => {
+    if (x.distance > maxDistance) return false;
+    if (cuisineFilter.size > 0 && !cuisineFilter.has(x.cuisine)) return false;
+    if (priceFilter.size > 0) {
+      const inRange = tiers.some((t) => priceFilter.has(t.id) && x.estCost >= t.min && x.estCost <= t.max);
+      if (!inRange) return false;
+    }
+    return true;
+  });
 
   // Whichever device is on-screen runs the spin countdown and opens voting.
   // Foreground timers fire reliably (and resume on return), so the room never
@@ -365,8 +382,27 @@ export default function NextStopMultiplayer({ onHome }) {
               </button>
             </div>
             <Roster players={r.players} count={playerCount} />
+            <div className="px-5 pt-3">
+              <p className="flex items-center gap-1 text-[12px]" style={{ color: C.muted }}>
+                <MapPin size={12} />
+                {loading ? "Finding your location…" : (label || "Set a location")}
+                {!loading && ` · ${hostPool.length} spots`}
+                <button onClick={() => setShowCity((s) => !s)} className="ml-1 font-mono text-[11px]" style={{ color: C.amber }}>change</button>
+              </p>
+              {(showCity || needCity) && (
+                <div className="mt-2 flex gap-2">
+                  <input value={cityInput} onChange={(e) => setCityInput(e.target.value)} placeholder="City or address"
+                    className="flex-1 font-body text-[13px] px-3 py-2 rounded-lg outline-none"
+                    style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }} />
+                  <button onClick={() => { setCity(cityInput); setShowCity(false); }} className="px-3 py-2 rounded-lg font-display font-semibold text-[12px]" style={{ backgroundColor: C.maroon, color: C.cream }}>Go</button>
+                  <button onClick={() => { useMyLocation(); setShowCity(false); }} className="px-3 py-2 rounded-lg font-display font-semibold text-[12px]" style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }}>📍</button>
+                </div>
+              )}
+              {needCity && !loading && <p className="text-[11px] font-body mt-1" style={{ color: C.creamDim }}>Location's off — type a city to search.</p>}
+              {locError && <p className="text-[11px] font-body mt-1" style={{ color: "#FF9B9B" }}>{locError}</p>}
+            </div>
             <HostFilters
-              filtersOpen={filtersOpen} setFiltersOpen={setFiltersOpen}
+              filtersOpen={filtersOpen} setFiltersOpen={setFiltersOpen} cuisines={cuisines}
               cuisineFilter={cuisineFilter} setCuisineFilter={setCuisineFilter}
               priceFilter={priceFilter} setPriceFilter={setPriceFilter}
               maxDistance={maxDistance} setMaxDistance={setMaxDistance}
@@ -375,10 +411,10 @@ export default function NextStopMultiplayer({ onHome }) {
             />
             <div className="px-5 pt-3 pb-6">
               <button onClick={() => hostPool.length && r.spin(hostPool)}
-                disabled={hostPool.length === 0}
+                disabled={loading || hostPool.length === 0}
                 className="w-full flex items-center justify-center gap-2 font-display font-semibold tracking-wide py-3 rounded-lg text-sm active:scale-[0.98] transition-transform"
-                style={hostPool.length === 0 ? { backgroundColor: "#3A3D42", color: "#7A7F87" } : { backgroundColor: C.maroon, color: C.cream }}>
-                <RotateCw size={16} /> {hostPool.length === 0 ? "NO MATCHES — ADJUST FILTERS" : "START SPINNING"}
+                style={loading || hostPool.length === 0 ? { backgroundColor: "#3A3D42", color: "#7A7F87" } : { backgroundColor: C.maroon, color: C.cream }}>
+                <RotateCw size={16} className={loading ? "animate-spin" : ""} /> {loading ? "LOADING…" : hostPool.length === 0 ? "NO MATCHES — ADJUST FILTERS" : "START SPINNING"}
               </button>
               <p className="text-center text-[10px] font-mono mt-2" style={{ color: C.muted }}>everyone votes on their own phone</p>
             </div>
@@ -406,7 +442,7 @@ export default function NextStopMultiplayer({ onHome }) {
         <div className="px-5 pt-8 pb-3 text-center">
           <p className="font-mono text-[11px] tracking-widest uppercase" style={{ color: C.amber }}>Spinning…</p>
         </div>
-        <div className="px-5 pb-4"><SpinBoard /></div>
+        <div className="px-5 pb-4"><SpinBoard names={(r.room?.candidates || []).map((c) => c.name)} /></div>
         <p className="px-5 pb-8 text-center text-[12px] font-body" style={{ color: C.creamDim }}>
           Picking three spots for the group — get ready to vote.
         </p>
