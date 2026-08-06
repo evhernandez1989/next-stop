@@ -32,7 +32,7 @@ function HomeScreen({ onSolo, onGroup }) {
           <h1 className="font-display text-4xl font-bold tracking-tight leading-none" style={{ color: C.cream }}>NEXT STOP</h1>
           <p className="font-mono text-[11px] mt-2 tracking-widest uppercase" style={{ color: C.amber }}>Restaurant Roulette</p>
           <p className="flex items-center gap-1 text-[12px] mt-3" style={{ color: C.muted }}>
-            <MapPin size={12} /> Ingalls, IN &middot; 21 spots in range
+            <MapPin size={12} /> Restaurants near you
           </p>
         </div>
         <div className="px-5 pb-8">

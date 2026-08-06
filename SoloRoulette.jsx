@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef } from "react";
+import { useRestaurants } from "./useRestaurants";
 import {
   MapPin, Phone, Navigation, RotateCw, Star, X, ChevronDown,
   Beef, Beer, Coffee, Fish, Pizza, UtensilsCrossed, Sparkles,
@@ -58,6 +59,19 @@ const PRICE_TIERS = [
   { id: "splurge", label: "Splurge", range: "$25+", match: (r) => r.price === 3 },
 ];
 
+// Editable price tiers: users can set their own dollar boundaries. Each
+// restaurant gets an estimated per-person cost from its price level, and is
+// bucketed by whichever tier range contains that estimate.
+const DEFAULT_TIERS = [
+  { id: "budget", label: "Budget", min: 8, max: 13 },
+  { id: "mid", label: "Mid-range", min: 14, max: 24 },
+  { id: "splurge", label: "Splurge", min: 25, max: 9999 },
+];
+const PRICE_EST = { 1: 10, 2: 19, 3: 30 };
+function fmtTier(t) {
+  return t.max >= 9999 ? `$${t.min}+` : `$${t.min}\u2013${t.max}`;
+}
+
 const CUISINE_ICONS = {
   American: UtensilsCrossed, Eclectic: Sparkles, Seafood: Fish,
   Breakfast: Coffee, "Cafe & Brunch": Coffee, Brewpub: Beer,
@@ -77,7 +91,7 @@ function haversineMiles(a, b) {
 
 const DATA = RESTAURANTS.map((r) => {
   const tier = PRICE_TIERS.find((t) => t.match(r));
-  return { ...r, distance: haversineMiles(USER, r), priceRange: tier.range, priceTier: tier.id };
+  return { ...r, distance: haversineMiles(USER, r), priceRange: tier.range, priceTier: tier.id, estCost: PRICE_EST[r.price] };
 }).sort((a, b) => a.distance - b.distance);
 
 const CUISINES = [...new Set(DATA.map((r) => r.cuisine))].sort();
@@ -99,11 +113,16 @@ function savePerma(set) {
   }
 }
 
-function filterPool({ maxDistance, cuisineFilter, priceFilter, sessionBlock, permaBlock }) {
-  return DATA.filter((r) => {
+function filterPool(list, { maxDistance, cuisineFilter, priceFilter, sessionBlock, permaBlock, tiers }) {
+  return (list || []).filter((r) => {
     if (r.distance > maxDistance) return false;
     if (cuisineFilter.size > 0 && !cuisineFilter.has(r.cuisine)) return false;
-    if (priceFilter.size > 0 && !priceFilter.has(r.priceTier)) return false;
+    if (priceFilter.size > 0) {
+      const inRange = (tiers || DEFAULT_TIERS).some(
+        (t) => priceFilter.has(t.id) && r.estCost >= t.min && r.estCost <= t.max
+      );
+      if (!inRange) return false;
+    }
     if (sessionBlock.has(r.name)) return false;
     if (permaBlock.has(r.name)) return false;
     return true;
@@ -125,7 +144,6 @@ function Flap({ char }) {
         boxShadow: "inset 0 -1px 0 rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.06)",
       }}
     >
-      <span className="absolute left-0 right-0 top-1/2 h-[1px]" style={{ backgroundColor: "rgba(0,0,0,0.5)" }} />
       {char}
     </span>
   );
@@ -171,8 +189,10 @@ function VoteCard({ r, votes, onVote }) {
 
 export default function SoloRoulette({ onHome }) {
   const [cuisineFilter, setCuisineFilter] = useState(new Set());
-  const [maxDistance, setMaxDistance] = useState(15);
+  const [maxDistance, setMaxDistance] = useState(25);
   const [priceFilter, setPriceFilter] = useState(new Set());
+  const [tiers, setTiers] = useState(DEFAULT_TIERS);
+  const [priceEdit, setPriceEdit] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [boardText, setBoardText] = useState("PULL THE LEVER");
   const [result, setResult] = useState(null);
@@ -189,8 +209,19 @@ export default function SoloRoulette({ onHome }) {
   const dragX = useRef(0);
   const [dragOffset, setDragOffset] = useState(0);
 
-  const filterArgs = { maxDistance, cuisineFilter, priceFilter, sessionBlock, permaBlock };
-  const pool = useMemo(() => filterPool(filterArgs), [maxDistance, cuisineFilter, priceFilter, sessionBlock, permaBlock]);
+  const { restaurants, loading, error, label, needCity, setCity, useMyLocation } = useRestaurants();
+  const [showCity, setShowCity] = useState(false);
+  const [cityInput, setCityInput] = useState("");
+
+  const cuisines = useMemo(() => [...new Set(restaurants.map((r) => r.cuisine))].sort(), [restaurants]);
+
+  const filterArgs = { maxDistance, cuisineFilter, priceFilter, sessionBlock, permaBlock, tiers };
+  const pool = useMemo(() => filterPool(restaurants, filterArgs), [restaurants, maxDistance, cuisineFilter, priceFilter, sessionBlock, permaBlock, tiers]);
+
+  function updateTier(i, key, raw) {
+    const v = raw === "" ? 0 : Math.max(0, Number(raw) || 0);
+    setTiers((cur) => cur.map((t, idx) => (idx === i ? { ...t, [key]: v } : t)));
+  }
 
   function toggleSet(setFn, current, value) {
     const next = new Set(current);
@@ -273,7 +304,7 @@ export default function SoloRoulette({ onHome }) {
       savePerma(nextPerma);
     }
     setSkipSheet(false);
-    const remaining = filterPool({ ...filterArgs, sessionBlock: nextSession, permaBlock: nextPerma });
+    const remaining = filterPool(restaurants, { ...filterArgs, sessionBlock: nextSession, permaBlock: nextPerma });
     if (remaining.length === 0) {
       setResult(null);
       setBoardText("NO MATCHES LEFT");
@@ -324,7 +355,7 @@ export default function SoloRoulette({ onHome }) {
   }
 
   // reusable inline styles for the two chip states
-  const chipOn = { backgroundColor: C.amber, border: `1px solid ${C.amber}`, color: C.flap };
+  const chipOn = { backgroundColor: C.maroon, border: `1px solid ${C.maroon}`, color: C.cream };
   const chipOff = { backgroundColor: "transparent", border: `1px solid ${C.hairline}`, color: C.creamDim };
 
   return (
@@ -362,9 +393,39 @@ export default function SoloRoulette({ onHome }) {
               <Home size={11} /> MODES
             </button>
           </div>
-          <p className="flex items-center gap-1 text-[12px] mt-2" style={{ color: C.muted }}>
-            <MapPin size={12} /> Ingalls, IN &middot; {pool.length} spots in range
-          </p>
+          <div className="mt-2">
+            <p className="flex items-center gap-1 text-[12px]" style={{ color: C.muted }}>
+              <MapPin size={12} />
+              {loading ? "Finding your location…" : (label || "Set a location")}
+              {!loading && ` · ${pool.length} spots`}
+              <button onClick={() => setShowCity((s) => !s)} className="ml-1 font-mono text-[11px]" style={{ color: C.amber }}>change</button>
+            </p>
+            {(showCity || needCity) && (
+              <div className="mt-2 flex gap-2">
+                <input
+                  value={cityInput}
+                  onChange={(e) => setCityInput(e.target.value)}
+                  placeholder="City or address"
+                  className="flex-1 font-body text-[13px] px-3 py-2 rounded-lg outline-none"
+                  style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }}
+                />
+                <button
+                  onClick={() => { setCity(cityInput); setShowCity(false); }}
+                  className="px-3 py-2 rounded-lg font-display font-semibold text-[12px]"
+                  style={{ backgroundColor: C.maroon, color: C.cream }}
+                >Go</button>
+                <button
+                  onClick={() => { useMyLocation(); setShowCity(false); }}
+                  className="px-3 py-2 rounded-lg font-display font-semibold text-[12px]"
+                  style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }}
+                >📍</button>
+              </div>
+            )}
+            {needCity && !loading && (
+              <p className="text-[11px] font-body mt-1" style={{ color: C.creamDim }}>Location's off — type a city to search.</p>
+            )}
+            {error && <p className="text-[11px] font-body mt-1" style={{ color: "#FF9B9B" }}>{error}</p>}
+          </div>
         </div>
 
         {/* Filters */}
@@ -383,7 +444,7 @@ export default function SoloRoulette({ onHome }) {
               <div>
                 <p className="text-[11px] font-mono mb-1.5 uppercase tracking-wide" style={{ color: C.muted }}>Cuisine</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {CUISINES.map((c) => (
+                  {cuisines.map((c) => (
                     <button
                       key={c}
                       onClick={() => toggleSet(setCuisineFilter, cuisineFilter, c)}
@@ -398,9 +459,16 @@ export default function SoloRoulette({ onHome }) {
               </div>
 
               <div>
-                <p className="text-[11px] font-mono mb-1.5 uppercase tracking-wide" style={{ color: C.muted }}>Estimated price / person</p>
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-[11px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>
+                    Price / person <span style={{ textTransform: "none", opacity: 0.8 }}>· tap any that apply</span>
+                  </p>
+                  <button onClick={() => setPriceEdit((e) => !e)} className="text-[11px] font-mono" style={{ color: C.amber }}>
+                    {priceEdit ? "done" : "edit"}
+                  </button>
+                </div>
                 <div className="flex gap-1.5">
-                  {PRICE_TIERS.map((t) => (
+                  {tiers.map((t) => (
                     <button
                       key={t.id}
                       onClick={() => toggleSet(setPriceFilter, priceFilter, t.id)}
@@ -408,19 +476,68 @@ export default function SoloRoulette({ onHome }) {
                       style={priceFilter.has(t.id) ? { ...chipOn, fontWeight: 600 } : chipOff}
                     >
                       <div className="font-display leading-tight">{t.label}</div>
-                      <div className="font-mono text-[10px] opacity-80 leading-tight">{t.range}</div>
+                      <div className="font-mono text-[10px] opacity-80 leading-tight">{fmtTier(t)}</div>
                     </button>
                   ))}
                 </div>
+
+                {priceEdit && (
+                  <div className="mt-2 space-y-2 rounded-lg p-2.5" style={{ backgroundColor: C.fill }}>
+                    <p className="text-[10px] font-body" style={{ color: C.muted }}>Set your own dollar ranges per person.</p>
+                    {tiers.map((t, i) => (
+                      <div key={t.id} className="flex items-center gap-2">
+                        <span className="w-16 text-[11px] font-display shrink-0" style={{ color: C.cream }}>{t.label}</span>
+                        <span className="text-[11px] font-mono" style={{ color: C.muted }}>$</span>
+                        <input
+                          type="number" inputMode="numeric" min="0" value={t.min}
+                          onChange={(e) => updateTier(i, "min", e.target.value)}
+                          className="w-14 text-right font-mono text-[12px] px-2 py-1 rounded-md outline-none"
+                          style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }}
+                        />
+                        {t.max >= 9999 ? (
+                          <span className="text-[11px] font-mono" style={{ color: C.muted }}>and up</span>
+                        ) : (
+                          <>
+                            <span className="text-[11px] font-mono" style={{ color: C.muted }}>to $</span>
+                            <input
+                              type="number" inputMode="numeric" min="0" value={t.max}
+                              onChange={(e) => updateTier(i, "max", e.target.value)}
+                              className="w-14 text-right font-mono text-[12px] px-2 py-1 rounded-md outline-none"
+                              style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }}
+                            />
+                          </>
+                        )}
+                      </div>
+                    ))}
+                    <button onClick={() => setTiers(DEFAULT_TIERS)} className="text-[10px] font-mono underline" style={{ color: C.muted }}>
+                      reset to defaults
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div>
-                <p className="text-[11px] font-mono mb-1.5 uppercase tracking-wide" style={{ color: C.muted }}>Max distance: {maxDistance} mi</p>
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-[11px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>Max distance</p>
+                  <div className="flex items-center gap-1">
+                    <input
+                      type="number" inputMode="numeric" min="1" max="50" value={maxDistance}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        if (raw === "") { setMaxDistance(1); return; }
+                        setMaxDistance(Math.min(50, Math.max(1, Number(raw) || 1)));
+                      }}
+                      className="w-14 text-right font-mono text-[12px] px-2 py-1 rounded-md outline-none"
+                      style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }}
+                    />
+                    <span className="text-[11px] font-mono" style={{ color: C.muted }}>mi</span>
+                  </div>
+                </div>
                 <input
-                  type="range" min="1" max="20" value={maxDistance}
+                  type="range" min="1" max="50" value={maxDistance}
                   onChange={(e) => setMaxDistance(Number(e.target.value))}
                   className="w-full"
-                  style={{ accentColor: C.amber }}
+                  style={{ accentColor: C.maroon }}
                 />
               </div>
 
@@ -473,14 +590,14 @@ export default function SoloRoulette({ onHome }) {
         <div className="px-5 pb-4">
           <button
             onClick={spin}
-            disabled={pool.length === 0 || spinning}
+            disabled={loading || pool.length === 0 || spinning}
             className="w-full flex items-center justify-center gap-2 font-display font-semibold tracking-wide py-3 rounded-lg text-sm active:scale-[0.98] transition-transform"
-            style={pool.length === 0 || spinning
+            style={loading || pool.length === 0 || spinning
               ? { backgroundColor: "#3A3D42", color: "#7A7F87" }
               : { backgroundColor: C.maroon, color: C.cream }}
           >
-            <RotateCw size={16} className={spinning ? "animate-spin" : ""} />
-            {pool.length === 0 ? "NO MATCHES \u2014 ADJUST FILTERS" : spinning ? "SPINNING..." : "SPIN"}
+            <RotateCw size={16} className={spinning || loading ? "animate-spin" : ""} />
+            {loading ? "LOADING…" : pool.length === 0 ? "NO MATCHES \u2014 ADJUST FILTERS" : spinning ? "SPINNING..." : "SPIN"}
           </button>
           {!groupMode && (
             <p className="text-center text-[10px] font-mono mt-2" style={{ color: "#6B7280" }}>
