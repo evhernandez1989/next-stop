@@ -59,3 +59,16 @@ export function useRestaurants() {
 
   return { restaurants, loading, error, label, needCity, setCity, useMyLocation };
 }
+
+// Directions link that opens the device's native maps app:
+// Apple Maps on iPhone/iPad/Mac, Google Maps everywhere else.
+export function directionsUrl(name, address) {
+  const q = encodeURIComponent(`${name} ${address}`.trim());
+  const isApple =
+    typeof navigator !== "undefined" &&
+    (/iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && (navigator.maxTouchPoints || 0) >= 0 && /Macintosh/i.test(navigator.userAgent)));
+  return isApple
+    ? `https://maps.apple.com/?daddr=${q}`
+    : `https://www.google.com/maps/dir/?api=1&destination=${q}`;
+}
