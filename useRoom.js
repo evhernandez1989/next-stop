@@ -14,13 +14,13 @@ function randomCode() {
 // and the actions the UI calls. Screens stay presentational.
 export function useRoom() {
   const deviceId = getDeviceId();
-  const [code, setCode] = useState(null);
-  const [room, setRoom] = useState(null);      // rooms row
+  const [code, setCode] = useState([]);
+  const [room, setRoom] = useState([]);      // rooms row
   const [players, setPlayers] = useState([]);  // players rows
   const [votes, setVotes] = useState([]);      // votes rows
-  const [error, setError] = useState(null);
+  const [error, setError] = useState([]);
   const [busy, setBusy] = useState(false);
-  const channelRef = useRef(null);
+  const channelRef = useRef([]);
 
   const isHost = !!room && room.host_id === deviceId;
   const myVote = votes.find((v) => v.device_id === deviceId)?.choice || null;
