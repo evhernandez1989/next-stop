@@ -6,7 +6,7 @@ import {
   UtensilsCrossed, Sparkles, ThumbsUp, Trophy, Star, Phone, Navigation, Home,
 } from "lucide-react";
 import { useRoom } from "./useRoom";
-import { useRestaurants } from "./useRestaurants";
+import { useRestaurants, directionsUrl } from "./useRestaurants";
 import { DATA, DEFAULT_TIERS, fmtTier } from "./restaurants";
 
 const C = {
@@ -68,9 +68,6 @@ function Frame({ children }) {
       `}</style>
       <div className="relative w-full max-w-[400px] rounded-[2.2rem] shadow-2xl overflow-hidden font-body"
         style={{ backgroundColor: C.shell, border: `6px solid ${C.shellBorder}`, minHeight: 640 }}>
-        <div className="flex justify-between items-center px-6 pt-3 pb-1 text-[11px] font-mono" style={{ color: C.muted }}>
-          <span>9:41</span><span>NEXT STOP</span><span>100%</span>
-        </div>
         {children}
       </div>
     </div>
@@ -539,7 +536,7 @@ export default function NextStopMultiplayer({ onHome }) {
               <a href={`tel:${w.phone}`} className="flex-1 flex items-center justify-center gap-1.5 text-[12px] font-display font-medium py-2 rounded-md" style={{ backgroundColor: C.flap, color: C.cream }}>
                 <Phone size={13} /> Call
               </a>
-              <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(w.name + " " + w.address)}`} target="_blank" rel="noreferrer"
+              <a href={directionsUrl(w.name, w.address)} target="_blank" rel="noreferrer"
                 className="flex-1 flex items-center justify-center gap-1.5 text-[12px] font-display font-medium py-2 rounded-md" style={{ backgroundColor: C.maroon, color: C.cream }}>
                 <Navigation size={13} /> Directions
               </a>
