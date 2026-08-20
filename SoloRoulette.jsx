@@ -1,5 +1,5 @@
 import { useState, useMemo, useRef } from "react";
-import { useRestaurants } from "./useRestaurants";
+import { useRestaurants, directionsUrl } from "./useRestaurants";
 import {
   MapPin, Phone, Navigation, RotateCw, Star, X, ChevronDown,
   Beef, Beer, Coffee, Fish, Pizza, UtensilsCrossed, Sparkles,
@@ -371,12 +371,6 @@ export default function SoloRoulette({ onHome }) {
         className="relative w-full max-w-[400px] rounded-[2.2rem] shadow-2xl overflow-hidden font-body"
         style={{ backgroundColor: C.shell, border: `6px solid ${C.shellBorder}` }}
       >
-        {/* Status bar */}
-        <div className="flex justify-between items-center px-6 pt-3 pb-1 text-[11px] font-mono" style={{ color: C.muted }}>
-          <span>9:41</span>
-          <span>NEXT STOP</span>
-          <span>100%</span>
-        </div>
 
         {/* Header */}
         <div className="px-5 pt-2 pb-4" style={{ borderBottom: `1px solid ${C.hairlineSoft}` }}>
@@ -668,7 +662,7 @@ export default function SoloRoulette({ onHome }) {
                   <Phone size={13} /> Call
                 </a>
                 <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(result.name + " " + result.address)}`}
+                  href={directionsUrl(result.name, result.address)}
                   target="_blank" rel="noreferrer" onClick={chooseThisPlace}
                   className="flex-1 flex items-center justify-center gap-1.5 text-[12px] font-display font-medium py-2 rounded-md"
                   style={{ backgroundColor: C.maroon, color: C.cream }}>
