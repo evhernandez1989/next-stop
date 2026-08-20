@@ -22,9 +22,6 @@ function HomeScreen({ onSolo, onGroup }) {
       `}</style>
       <div className="relative w-full max-w-[400px] rounded-[2.2rem] shadow-2xl overflow-hidden font-body"
         style={{ backgroundColor: C.shell, border: `6px solid ${C.shellBorder}`, minHeight: 640 }}>
-        <div className="flex justify-between items-center px-6 pt-3 pb-1 text-[11px] font-mono" style={{ color: C.muted }}>
-          <span>9:41</span><span>NEXT STOP</span><span>100%</span>
-        </div>
         <div className="px-5 pt-10 pb-6 flex flex-col items-center text-center">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: C.maroon }}>
             <Dices size={30} style={{ color: C.cream }} />
