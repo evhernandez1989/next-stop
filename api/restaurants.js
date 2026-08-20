@@ -1,17 +1,16 @@
-// Vercel serverless function — runs on the server, so the Google key stays secret.
-// The app calls /api/restaurants?lat=..&lng=..  (or ?city=..) and gets back a
-// clean list in the same shape the app already uses.
+// Vercel serverless function — Google key stays server-side.
+// The app calls /api/restaurants?lat=..&lng=..  (or ?city=..) and gets a
+// clean, deduped list of nearby food spots across many categories.
 
 const PRICE_EST = { 1: 10, 2: 19, 3: 30 };
 
-// Map Google's price level enum -> our 1/2/3, then to an estimated per-person cost.
 function priceFromLevel(level) {
   switch (level) {
     case "PRICE_LEVEL_INEXPENSIVE": return 1;
     case "PRICE_LEVEL_MODERATE": return 2;
     case "PRICE_LEVEL_EXPENSIVE":
     case "PRICE_LEVEL_VERY_EXPENSIVE": return 3;
-    default: return 2; // unknown -> treat as mid
+    default: return 2;
   }
 }
 
@@ -19,15 +18,18 @@ function tierRange(price) {
   return price === 1 ? "$8\u2013\u200913" : price === 3 ? "$25+" : "$14\u2013\u200924";
 }
 
-// Very rough cuisine guess from Google place types, mapped to our icon categories.
+// Map Google place types -> our display cuisine (drives the app's icons).
 function cuisineFromTypes(types = []) {
   const t = new Set(types);
   if (t.has("steak_house")) return "Steakhouse";
   if (t.has("seafood_restaurant")) return "Seafood";
   if (t.has("pizza_restaurant") || t.has("italian_restaurant")) return "Italian";
-  if (t.has("cafe") || t.has("coffee_shop")) return "Cafe & Brunch";
+  if (t.has("ice_cream_shop") || t.has("dessert_shop") || t.has("dessert_restaurant")) return "Dessert";
+  if (t.has("bakery")) return "Bakery";
+  if (t.has("coffee_shop") || t.has("cafe")) return "Cafe & Brunch";
   if (t.has("breakfast_restaurant") || t.has("brunch_restaurant")) return "Breakfast";
-  if (t.has("bar") || t.has("pub") || t.has("brewery")) return "Brewpub";
+  if (t.has("bar") || t.has("pub") || t.has("brewery") || t.has("wine_bar")) return "Brewpub";
+  if (t.has("meal_takeaway") || t.has("fast_food_restaurant") || t.has("sandwich_shop")) return "American";
   if (t.has("diner")) return "Diner";
   return "American";
 }
@@ -42,17 +44,57 @@ function haversineMiles(a, b) {
   return R * 2 * Math.asin(Math.sqrt(h));
 }
 
+// Query several categories so we don't miss cafes, ice cream, bakeries, etc.
+// Each call returns up to 20 of that type; ranked by DISTANCE so close-by
+// local spots win instead of distant popular chains.
+const TYPE_GROUPS = [
+  ["restaurant"],
+  ["cafe", "coffee_shop"],
+  ["bakery", "ice_cream_shop"],
+  ["bar"],
+  ["meal_takeaway", "fast_food_restaurant"],
+];
+
+const FIELD_MASK = [
+  "places.id",
+  "places.displayName",
+  "places.formattedAddress",
+  "places.location",
+  "places.rating",
+  "places.userRatingCount",
+  "places.priceLevel",
+  "places.types",
+  "places.nationalPhoneNumber",
+  "places.internationalPhoneNumber",
+].join(",");
+
+async function nearbyByType(key, origin, radiusMeters, includedTypes) {
+  const body = {
+    includedTypes,
+    maxResultCount: 20,
+    rankPreference: "DISTANCE",
+    locationRestriction: {
+      circle: { center: { latitude: origin.lat, longitude: origin.lng }, radius: radiusMeters },
+    },
+  };
+  const resp = await fetch("https://places.googleapis.com/v1/places:searchNearby", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Goog-Api-Key": key, "X-Goog-FieldMask": FIELD_MASK },
+    body: JSON.stringify(body),
+  });
+  if (!resp.ok) return [];
+  const data = await resp.json();
+  return data.places || [];
+}
+
 export default async function handler(req, res) {
   const key = process.env.GOOGLE_PLACES_KEY;
-  if (!key) {
-    return res.status(500).json({ error: "Server missing GOOGLE_PLACES_KEY" });
-  }
+  if (!key) return res.status(500).json({ error: "Server missing GOOGLE_PLACES_KEY" });
 
   try {
     let { lat, lng, city, radius } = req.query;
     const radiusMeters = Math.min(50000, Math.max(1000, Number(radius) || 40000));
 
-    // If a city/address was given instead of coordinates, geocode it first.
     if ((!lat || !lng) && city) {
       const geo = await fetch(
         `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(city)}&key=${key}`
@@ -61,52 +103,24 @@ export default async function handler(req, res) {
       if (!loc) return res.status(404).json({ error: "Couldn't find that place." });
       lat = loc.lat; lng = loc.lng;
     }
-
-    if (!lat || !lng) {
-      return res.status(400).json({ error: "Provide lat/lng or a city." });
-    }
+    if (!lat || !lng) return res.status(400).json({ error: "Provide lat/lng or a city." });
     const origin = { lat: Number(lat), lng: Number(lng) };
 
-    // Places API (New) — Nearby Search (POST with a field mask).
-    const body = {
-      includedTypes: ["restaurant"],
-      maxResultCount: 20,
-      locationRestriction: {
-        circle: { center: { latitude: origin.lat, longitude: origin.lng }, radius: radiusMeters },
-      },
-      rankPreference: "POPULARITY",
-    };
-    const fieldMask = [
-      "places.displayName",
-      "places.formattedAddress",
-      "places.location",
-      "places.rating",
-      "places.userRatingCount",
-      "places.priceLevel",
-      "places.types",
-      "places.nationalPhoneNumber",
-      "places.internationalPhoneNumber",
-    ].join(",");
+    const settled = await Promise.allSettled(
+      TYPE_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types))
+    );
+    const raw = settled.flatMap((s) => (s.status === "fulfilled" ? s.value : []));
 
-    const resp = await fetch("https://places.googleapis.com/v1/places:searchNearby", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "X-Goog-Api-Key": key,
-        "X-Goog-FieldMask": fieldMask,
-      },
-      body: JSON.stringify(body),
-    });
-    const data = await resp.json();
-    if (!resp.ok) {
-      return res.status(resp.status).json({ error: data.error?.message || "Places request failed" });
-    }
-
-    const restaurants = (data.places || []).map((p) => {
+    const seen = new Set();
+    const restaurants = [];
+    for (const p of raw) {
+      const id = p.id || `${p.displayName && p.displayName.text}|${p.formattedAddress}`;
+      if (seen.has(id)) continue;
+      seen.add(id);
       const price = priceFromLevel(p.priceLevel);
       const loc = p.location || {};
       const r = {
-        name: p.displayName?.text || "Unknown",
+        name: (p.displayName && p.displayName.text) || "Unknown",
         cuisine: cuisineFromTypes(p.types),
         rating: p.rating || 0,
         ratingCount: p.userRatingCount || 0,
@@ -119,12 +133,13 @@ export default async function handler(req, res) {
         lng: loc.longitude,
       };
       r.distance = haversineMiles(origin, { lat: r.lat, lng: r.lng });
-      return r;
-    }).sort((a, b) => a.distance - b.distance);
+      restaurants.push(r);
+    }
+    restaurants.sort((a, b) => a.distance - b.distance);
+    const trimmed = restaurants.slice(0, 60);
 
-    // Cache at the edge for 5 min so repeated spins don't re-bill Google.
     res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=600");
-    return res.status(200).json({ origin, restaurants });
+    return res.status(200).json({ origin, count: trimmed.length, restaurants: trimmed });
   } catch (e) {
     return res.status(500).json({ error: "Unexpected error fetching places." });
   }
