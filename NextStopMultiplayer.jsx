@@ -49,7 +49,7 @@ function Board({ text }) {
 }
 
 function SpinBoard({ names }) {
-  const pool = names && names.length ? names : DATA.map((d) => d.name);
+  const pool = names && names.length ? names : ["SPINNING", "NEXT STOP", "GOOD EATS", "PICK A SPOT"];
   const [txt, setTxt] = useState("SPINNING");
   useEffect(() => {
     const id = setInterval(() => setTxt(pool[Math.floor(Math.random() * pool.length)]), 90);
