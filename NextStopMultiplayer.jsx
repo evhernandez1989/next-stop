@@ -469,8 +469,8 @@ export default function NextStopMultiplayer({ onHome }) {
               const pct = totalVotes ? Math.round((count / totalVotes) * 100) : 0;
               const mine = r.myVote === c.name;
               return (
-                <button key={c.name} onClick={() => r.castVote(c.name)}
-                  className="w-full text-left rounded-lg p-3 relative overflow-hidden active:scale-[0.99] transition-transform"
+                <div key={c.name} onClick={() => r.castVote(c.name)} role="button"
+                  className="w-full text-left rounded-lg p-3 relative overflow-hidden active:scale-[0.99] transition-transform cursor-pointer"
                   style={{ backgroundColor: C.card, border: mine ? `1px solid ${C.maroon}` : `1px solid ${C.hairline}` }}>
                   <div className="absolute inset-y-0 left-0" style={{ width: `${pct}%`, backgroundColor: "rgba(122,46,46,0.28)", transition: "width 0.3s" }} />
                   <div className="relative flex items-center justify-between gap-2">
@@ -480,12 +480,16 @@ export default function NextStopMultiplayer({ onHome }) {
                         <p className="font-display font-semibold text-[14px] truncate" style={{ color: C.cream }}>{c.name}</p>
                       </div>
                       <p className="text-[10px] font-mono mt-0.5" style={{ color: C.creamDim }}>{c.priceRange} &middot; {c.distance.toFixed(1)} mi &middot; {c.rating}★</p>
+                      <button onClick={(e) => { e.stopPropagation(); setInfoPlace(c); }}
+                        className="mt-1 inline-flex items-center gap-1 text-[10px] font-mono" style={{ color: C.amber }}>
+                        <Info size={11} /> More info
+                      </button>
                     </div>
                     <span className="flex items-center gap-1 text-[13px] font-display font-semibold shrink-0" style={{ color: mine ? C.cream : C.creamDim }}>
                       <ThumbsUp size={13} /> {count}
                     </span>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>
@@ -503,6 +507,7 @@ export default function NextStopMultiplayer({ onHome }) {
         {!r.isHost && (
           <p className="px-5 pt-4 pb-6 text-center text-[11px] font-mono" style={{ color: C.muted }}>waiting for the host to lock in the winner…</p>
         )}
+        {infoPlace && <PlaceInfo place={infoPlace} onClose={() => setInfoPlace(null)} />}
       </Frame>
     );
   }
