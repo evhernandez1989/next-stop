@@ -96,12 +96,21 @@ export default async function handler(req, res) {
     const radiusMeters = Math.min(50000, Math.max(1000, Number(radius) || 40000));
 
     if ((!lat || !lng) && city) {
-      const geo = await fetch(
-        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(city)}&key=${key}`
-      ).then((r) => r.json());
-      const loc = geo.results?.[0]?.geometry?.location;
+      // Resolve the city to coordinates using Places Text Search (same API the
+      // key is authorized for) instead of the separate Geocoding API.
+      const geoResp = await fetch("https://places.googleapis.com/v1/places:searchText", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Goog-Api-Key": key,
+          "X-Goog-FieldMask": "places.location,places.formattedAddress",
+        },
+        body: JSON.stringify({ textQuery: city, maxResultCount: 1 }),
+      });
+      const geo = await geoResp.json();
+      const loc = geo.places && geo.places[0] && geo.places[0].location;
       if (!loc) return res.status(404).json({ error: "Couldn't find that place." });
-      lat = loc.lat; lng = loc.lng;
+      lat = loc.latitude; lng = loc.longitude;
     }
     if (!lat || !lng) return res.status(400).json({ error: "Provide lat/lng or a city." });
     const origin = { lat: Number(lat), lng: Number(lng) };
