@@ -1,6 +1,8 @@
 import { useState, useMemo, useRef } from "react";
 import { useRestaurants, directionsUrl } from "./useRestaurants";
+import PlaceInfo from "./PlaceInfo";
 import {
+  Info,
   MapPin, Phone, Navigation, RotateCw, Star, X, ChevronDown,
   Beef, Beer, Coffee, Fish, Pizza, UtensilsCrossed, Sparkles,
   Users, ThumbsUp, SkipForward, Trophy, EyeOff, Undo2, Home,
@@ -204,6 +206,7 @@ export default function SoloRoulette({ onHome }) {
   const [sessionBlock, setSessionBlock] = useState(new Set());
   const [permaBlock, setPermaBlock] = useState(() => loadPerma());
   const [skipSheet, setSkipSheet] = useState(false);
+  const [infoPlace, setInfoPlace] = useState(null);
   const [hiddenOpen, setHiddenOpen] = useState(false);
   const intervalRef = useRef(null);
   const dragX = useRef(0);
@@ -674,6 +677,11 @@ export default function SoloRoulette({ onHome }) {
                   <SkipForward size={13} />
                 </button>
               </div>
+              <button onClick={() => setInfoPlace(result)}
+                className="w-full mt-2 flex items-center justify-center gap-1.5 text-[12px] font-display font-medium py-2 rounded-md"
+                style={{ backgroundColor: C.fill, color: C.cream, border: `1px solid ${C.hairline}` }}>
+                <Info size={13} /> More info about this spot
+              </button>
             </div>
           </div>
         )}
@@ -735,6 +743,7 @@ export default function SoloRoulette({ onHome }) {
             </div>
           </div>
         )}
+        {infoPlace && <PlaceInfo place={infoPlace} onClose={() => setInfoPlace(null)} />}
       </div>
     </div>
   );
