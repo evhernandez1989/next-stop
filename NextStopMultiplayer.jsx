@@ -280,7 +280,7 @@ export default function NextStopMultiplayer({ onHome }) {
           </div>
           <div className="px-5 pt-6 pb-4">
             <p className="flex items-center gap-1 text-[12px] mb-6" style={{ color: C.muted }}>
-              <MapPin size={12} /> Ingalls, IN &middot; 21 spots in range
+              <MapPin size={12} /> Restaurants near you &middot; set the spot after you start
             </p>
             {r.error && <p className="text-[12px] mb-3" style={{ color: "#FF9B9B" }}>{r.error}</p>}
             <NameField name={name} setName={setName} />
