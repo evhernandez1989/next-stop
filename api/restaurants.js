@@ -120,6 +120,7 @@ export default async function handler(req, res) {
       const price = priceFromLevel(p.priceLevel);
       const loc = p.location || {};
       const r = {
+        id: p.id || "",
         name: (p.displayName && p.displayName.text) || "Unknown",
         cuisine: cuisineFromTypes(p.types),
         rating: p.rating || 0,
