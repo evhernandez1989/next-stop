@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import {
+  Info,
   MapPin, Users, Copy, Check, Crown, ArrowLeft, RotateCw, Wifi,
   UserPlus, ChevronRight, ChevronDown, Beef, Beer, Coffee, Fish, Pizza,
   UtensilsCrossed, Sparkles, ThumbsUp, Trophy, Star, Phone, Navigation, Home,
@@ -8,6 +9,7 @@ import {
 import { useRoom } from "./useRoom";
 import { useRestaurants, directionsUrl } from "./useRestaurants";
 import { DATA, DEFAULT_TIERS, fmtTier } from "./restaurants";
+import PlaceInfo from "./PlaceInfo";
 
 const C = {
   page: "#0D1013", shell: "#20262E", shellBorder: "#0A0C0E", card: "#2E3742",
@@ -206,6 +208,7 @@ export default function NextStopMultiplayer({ onHome }) {
     try { return (new URLSearchParams(window.location.search).get("room") || "").replace(/^NEXT-/i, ""); } catch { return ""; }
   });
   const [copied, setCopied] = useState(false);
+  const [infoPlace, setInfoPlace] = useState(null);
 
   // Host: live restaurants from device location (or a typed city).
   const { restaurants, loading, error: locError, label, needCity, setCity, useMyLocation } = useRestaurants();
@@ -541,6 +544,11 @@ export default function NextStopMultiplayer({ onHome }) {
                 <Navigation size={13} /> Directions
               </a>
             </div>
+            <button onClick={() => setInfoPlace(w)}
+              className="w-full mt-2 flex items-center justify-center gap-1.5 text-[12px] font-display font-medium py-2 rounded-md"
+              style={{ backgroundColor: C.fill, color: C.cream, border: `1px solid ${C.hairline}` }}>
+              <Info size={13} /> More info about this spot
+            </button>
           </div>
         </div>
       )}
@@ -557,6 +565,7 @@ export default function NextStopMultiplayer({ onHome }) {
       {!r.isHost && (
         <p className="px-5 pt-2 pb-6 text-center text-[11px] font-mono" style={{ color: C.muted }}>the host can spin again from here</p>
       )}
+      {infoPlace && <PlaceInfo place={infoPlace} onClose={() => setInfoPlace(null)} />}
     </Frame>
   );
 }
