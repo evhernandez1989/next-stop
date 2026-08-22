@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import {
   Info,
@@ -200,6 +200,33 @@ function HostFilters({
   );
 }
 
+function distMiles(a, b) {
+  const R = 3958.8;
+  const dLat = ((b.lat - a.lat) * Math.PI) / 180;
+  const dLng = ((b.lng - a.lng) * Math.PI) / 180;
+  const l1 = (a.lat * Math.PI) / 180, l2 = (b.lat * Math.PI) / 180;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(l1) * Math.cos(l2) * Math.sin(dLng / 2) ** 2;
+  return R * 2 * Math.asin(Math.sqrt(h));
+}
+
+// "middle" = plain centroid (everyone averages out).
+// "farthest" = weight each person by how far they are from the middle, so the
+// search center shifts toward whoever's farthest out (shortens their trip).
+function computeCenter(points, mode) {
+  if (!points.length) return null;
+  const avg = {
+    lat: points.reduce((s, p) => s + p.lat, 0) / points.length,
+    lng: points.reduce((s, p) => s + p.lng, 0) / points.length,
+  };
+  if (mode !== "farthest" || points.length < 2) return avg;
+  let sLat = 0, sLng = 0, sW = 0;
+  for (const p of points) {
+    const w = 1 + distMiles(avg, p);
+    sLat += p.lat * w; sLng += p.lng * w; sW += w;
+  }
+  return { lat: sLat / sW, lng: sLng / sW };
+}
+
 export default function NextStopMultiplayer({ onHome }) {
   const r = useRoom();
   const [name, setName] = useState("");
@@ -211,8 +238,35 @@ export default function NextStopMultiplayer({ onHome }) {
   const [infoPlace, setInfoPlace] = useState(null);
 
   // Host: live restaurants from device location (or a typed city).
-  const { restaurants, loading, error: locError, label, needCity, setCity, useMyLocation } = useRestaurants();
+  const { restaurants, loading, error: locError, label, needCity, setCity, useMyLocation, loadCoords } = useRestaurants();
   const [showCity, setShowCity] = useState(false);
+  const [optimizeMode, setOptimizeMode] = useState("middle"); // "middle" | "farthest"
+  const savedLocRef = useRef(false);
+
+  // Every participant shares their location once, saved to their player row.
+  useEffect(() => {
+    if (!r.code) { savedLocRef.current = false; return; }
+    if (savedLocRef.current || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { savedLocRef.current = true; r.saveMyLocation(pos.coords.latitude, pos.coords.longitude); },
+      () => {},
+      { timeout: 10000, maximumAge: 300000 }
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [r.code]);
+
+  // Host: recompute the group's center whenever people's locations or the mode
+  // change, and load restaurants around that center.
+  const partyPoints = (r.players || [])
+    .filter((p) => typeof p.lat === "number" && typeof p.lng === "number")
+    .map((p) => ({ lat: p.lat, lng: p.lng }));
+  const pointsKey = partyPoints.map((p) => `${p.lat.toFixed(4)},${p.lng.toFixed(4)}`).join("|");
+  useEffect(() => {
+    if (!r.isHost) return;
+    const center = computeCenter(partyPoints, optimizeMode);
+    if (center) loadCoords(center.lat, center.lng, `Group center · ${partyPoints.length} here`);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pointsKey, optimizeMode, r.isHost]);
   const [cityInput, setCityInput] = useState("");
 
   // Host filters (mirrors solo): applied when the host spins.
@@ -385,20 +439,23 @@ export default function NextStopMultiplayer({ onHome }) {
             <div className="px-5 pt-3">
               <p className="flex items-center gap-1 text-[12px]" style={{ color: C.muted }}>
                 <MapPin size={12} />
-                {loading ? "Finding your location…" : (label || "Set a location")}
-                {!loading && ` · ${hostPool.length} spots`}
-                <button onClick={() => setShowCity((s) => !s)} className="ml-1 font-mono text-[11px]" style={{ color: C.amber }}>change</button>
+                {loading ? "Finding the group's spot…" : `${partyPoints.length} sharing location · ${hostPool.length} spots`}
               </p>
-              {(showCity || needCity) && (
-                <div className="mt-2 flex gap-2">
-                  <input value={cityInput} onChange={(e) => setCityInput(e.target.value)} placeholder="City or address"
-                    className="flex-1 font-body text-[13px] px-3 py-2 rounded-lg outline-none"
-                    style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }} />
-                  <button onClick={() => { setCity(cityInput); setShowCity(false); }} className="px-3 py-2 rounded-lg font-display font-semibold text-[12px]" style={{ backgroundColor: C.maroon, color: C.cream }}>Go</button>
-                  <button onClick={() => { useMyLocation(); setShowCity(false); }} className="px-3 py-2 rounded-lg font-display font-semibold text-[12px]" style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }}>📍</button>
-                </div>
-              )}
-              {needCity && !loading && <p className="text-[11px] font-body mt-1" style={{ color: C.creamDim }}>Location's off — type a city to search.</p>}
+              <div className="mt-2 flex gap-1.5">
+                <button onClick={() => setOptimizeMode("middle")}
+                  className="flex-1 text-[11px] font-display font-semibold py-2 rounded-lg transition-colors"
+                  style={optimizeMode === "middle" ? { backgroundColor: C.maroon, color: C.cream } : { backgroundColor: "transparent", color: C.creamDim, border: `1px solid ${C.hairline}` }}>
+                  Meet in the middle
+                </button>
+                <button onClick={() => setOptimizeMode("farthest")}
+                  className="flex-1 text-[11px] font-display font-semibold py-2 rounded-lg transition-colors"
+                  style={optimizeMode === "farthest" ? { backgroundColor: C.maroon, color: C.cream } : { backgroundColor: "transparent", color: C.creamDim, border: `1px solid ${C.hairline}` }}>
+                  Favor the farthest
+                </button>
+              </div>
+              <p className="text-[10px] font-body mt-1" style={{ color: C.muted }}>
+                {optimizeMode === "middle" ? "Searching the average of everyone's location." : "Shifting the search toward whoever's farthest out."}
+              </p>
               {locError && <p className="text-[11px] font-body mt-1" style={{ color: "#FF9B9B" }}>{locError}</p>}
             </div>
             <HostFilters
