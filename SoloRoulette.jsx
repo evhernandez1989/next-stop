@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef } from "react";
 import { useRestaurants, directionsUrl } from "./useRestaurants";
+import { CUISINE_OPTIONS } from "./restaurants";
 import PlaceInfo from "./PlaceInfo";
 import {
   Info,
@@ -119,7 +120,7 @@ function savePerma(set) {
 function filterPool(list, { maxDistance, cuisineFilter, priceFilter, sessionBlock, permaBlock, tiers }) {
   return (list || []).filter((r) => {
     if (r.distance > maxDistance) return false;
-    if (cuisineFilter.size > 0 && !cuisineFilter.has(r.cuisine)) return false;
+    // cuisine is handled server-side (re-queries Google); no client cuisine filter
     if (priceFilter.size > 0) {
       const inRange = (tiers || DEFAULT_TIERS).some(
         (t) => priceFilter.has(t.id) && r.estCost >= t.min && r.estCost <= t.max
@@ -213,11 +214,11 @@ export default function SoloRoulette({ onHome }) {
   const dragX = useRef(0);
   const [dragOffset, setDragOffset] = useState(0);
 
-  const { restaurants, loading, error, label, needCity, setCity, useMyLocation } = useRestaurants();
+  const { restaurants, loading, error, label, needCity, setCity, useMyLocation } = useRestaurants({ cuisines: [...cuisineFilter], radiusMi: maxDistance });
   const [showCity, setShowCity] = useState(false);
   const [cityInput, setCityInput] = useState("");
 
-  const cuisines = useMemo(() => [...new Set(restaurants.map((r) => r.cuisine))].sort(), [restaurants]);
+  const cuisines = CUISINE_OPTIONS;
 
   const filterArgs = { maxDistance, cuisineFilter, priceFilter, sessionBlock, permaBlock, tiers };
   const pool = useMemo(() => filterPool(restaurants, filterArgs), [restaurants, maxDistance, cuisineFilter, priceFilter, sessionBlock, permaBlock, tiers]);
