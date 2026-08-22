@@ -4,7 +4,7 @@ import PlaceInfo from "./PlaceInfo";
 import {
   Info,
   MapPin, Phone, Navigation, RotateCw, Star, X, ChevronDown,
-  Beef, Beer, Coffee, Fish, Pizza, UtensilsCrossed, Sparkles,
+  Beef, Beer, Coffee, Fish, Pizza, Store, UtensilsCrossed, Sparkles,
   Users, ThumbsUp, SkipForward, Trophy, EyeOff, Undo2, Home,
 } from "lucide-react";
 
@@ -77,7 +77,8 @@ function fmtTier(t) {
 const CUISINE_ICONS = {
   American: UtensilsCrossed, Eclectic: Sparkles, Seafood: Fish,
   Breakfast: Coffee, "Cafe & Brunch": Coffee, Brewpub: Beer,
-  Steakhouse: Beef, Diner: UtensilsCrossed, Italian: Pizza,
+  Steakhouse: Beef, Diner: UtensilsCrossed, Italian: UtensilsCrossed,
+  Pizza: Pizza, "Fast Food": Beef, Burgers: Beef, Convenience: Store,
   "Brewery & Grill": Beer,
 };
 
