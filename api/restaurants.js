@@ -106,9 +106,7 @@ async function nearbyByType(key, origin, radiusMeters, includedTypes, rank) {
     includedTypes,
     maxResultCount: 20,
     rankPreference: rank || "DISTANCE",
-    // DISTANCE requires a restriction (closest first); POPULARITY uses a bias
-    // so a well-known spot a bit farther out can still rank in.
-    ...(rank === "POPULARITY" ? { locationBias: circle } : { locationRestriction: circle }),
+    locationRestriction: circle,
   };
   const resp = await fetch("https://places.googleapis.com/v1/places:searchNearby", {
     method: "POST",
