@@ -28,11 +28,15 @@ function cuisineFromTypes(types = []) {
   if (t.has("fast_food_restaurant") || t.has("hamburger_restaurant")) return "Fast Food";
   if (t.has("steak_house")) return "Steakhouse";
   if (t.has("seafood_restaurant")) return "Seafood";
-  if (t.has("mexican_restaurant")) return "Mexican";
+  if (t.has("mexican_restaurant") || t.has("latin_american_restaurant")) return "Mexican";
   if (t.has("chinese_restaurant")) return "Chinese";
+  if (t.has("vietnamese_restaurant")) return "Vietnamese";
+  if (t.has("korean_restaurant")) return "Korean";
   if (t.has("japanese_restaurant") || t.has("sushi_restaurant") || t.has("ramen_restaurant")) return "Japanese";
-  if (t.has("thai_restaurant")) return "Thai";
+  if (t.has("thai_restaurant") || t.has("indonesian_restaurant")) return "Thai & SE Asian";
   if (t.has("indian_restaurant")) return "Indian";
+  if (t.has("middle_eastern_restaurant") || t.has("mediterranean_restaurant")) return "Mediterranean";
+  if (t.has("barbecue_restaurant")) return "BBQ";
   if (t.has("italian_restaurant")) return "Italian";
   if (t.has("ice_cream_shop") || t.has("dessert_shop") || t.has("dessert_restaurant")) return "Dessert";
   if (t.has("bakery")) return "Bakery";
@@ -62,8 +66,17 @@ const TYPE_GROUPS = [
   ["restaurant"],
   ["cafe", "coffee_shop"],
   ["bakery", "ice_cream_shop"],
-  ["bar"],
+  ["bar", "pub"],
   ["meal_takeaway", "fast_food_restaurant"],
+  ["mexican_restaurant"],
+  ["chinese_restaurant", "vietnamese_restaurant"],
+  ["japanese_restaurant", "sushi_restaurant", "ramen_restaurant"],
+  ["korean_restaurant", "thai_restaurant", "indonesian_restaurant"],
+  ["italian_restaurant", "pizza_restaurant"],
+  ["indian_restaurant", "middle_eastern_restaurant", "mediterranean_restaurant"],
+  ["american_restaurant", "hamburger_restaurant", "barbecue_restaurant"],
+  ["breakfast_restaurant", "brunch_restaurant"],
+  ["sandwich_shop", "seafood_restaurant", "steak_house"],
 ];
 
 const FIELD_MASK = [
@@ -157,7 +170,7 @@ export default async function handler(req, res) {
       restaurants.push(r);
     }
     restaurants.sort((a, b) => a.distance - b.distance);
-    const trimmed = restaurants.slice(0, 60);
+    const trimmed = restaurants.slice(0, 90);
 
     res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=600");
     return res.status(200).json({ origin, count: trimmed.length, restaurants: trimmed });
