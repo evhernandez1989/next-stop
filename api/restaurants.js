@@ -106,7 +106,7 @@ async function nearbyByType(key, origin, radiusMeters, includedTypes, rank) {
     includedTypes,
     maxResultCount: 20,
     rankPreference: rank || "DISTANCE",
-    locationRestriction: circle,
+    locationRestriction: { circle },
   };
   const resp = await fetch("https://places.googleapis.com/v1/places:searchNearby", {
     method: "POST",
