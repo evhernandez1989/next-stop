@@ -63,29 +63,31 @@ function haversineMiles(a, b) {
 // Each call returns up to 20 of that type; ranked by DISTANCE so close-by
 // local spots win instead of distant popular chains.
 // Closest-first passes — fill the pool with what's genuinely nearby.
-const DISTANCE_GROUPS = [
-  ["restaurant"],
+// Non-restaurant food categories (searched once from the origin).
+const CATEGORY_GROUPS = [
   ["cafe", "coffee_shop"],
   ["bakery", "ice_cream_shop"],
   ["bar", "pub"],
   ["meal_takeaway", "fast_food_restaurant"],
 ];
 
-// Popularity passes — surface well-known local favorites that aren't in the
-// nearest 20. The first (generic "restaurant") catches notable spots even if
-// Google tagged their cuisine oddly.
-const POPULAR_GROUPS = [
-  ["restaurant"],
-  ["mexican_restaurant"],
-  ["chinese_restaurant", "vietnamese_restaurant"],
-  ["japanese_restaurant", "sushi_restaurant", "ramen_restaurant"],
-  ["korean_restaurant", "thai_restaurant", "indonesian_restaurant"],
-  ["italian_restaurant", "pizza_restaurant"],
-  ["indian_restaurant", "middle_eastern_restaurant", "mediterranean_restaurant"],
-  ["american_restaurant", "hamburger_restaurant", "barbecue_restaurant"],
-  ["breakfast_restaurant", "brunch_restaurant"],
-  ["sandwich_shop", "seafood_restaurant", "steak_house"],
-];
+// Build a 3x3 grid of search cells covering the area, so each sub-area's
+// closest restaurants are captured — not just the 20 closest to one point.
+// This reliably pulls in local spots regardless of how Google tags them.
+function gridCells(origin, radiusMeters) {
+  const spanMi = radiusMeters / 1609;
+  const offMi = spanMi * 0.66;
+  const dLat = offMi / 69;
+  const dLng = offMi / (69 * Math.max(0.2, Math.cos((origin.lat * Math.PI) / 180)));
+  const cellRadius = Math.min(50000, Math.round(spanMi * 0.6 * 1609));
+  const cells = [];
+  for (const a of [-1, 0, 1]) {
+    for (const b of [-1, 0, 1]) {
+      cells.push({ lat: origin.lat + a * dLat, lng: origin.lng + b * dLng, radius: cellRadius });
+    }
+  }
+  return cells;
+}
 
 const FIELD_MASK = [
   "places.id",
@@ -150,9 +152,10 @@ export default async function handler(req, res) {
     if (!lat || !lng) return res.status(400).json({ error: "Provide lat/lng or a city." });
     const origin = { lat: Number(lat), lng: Number(lng) };
 
+    const cells = gridCells(origin, radiusMeters);
     const settled = await Promise.allSettled([
-      ...DISTANCE_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types, "DISTANCE")),
-      ...POPULAR_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types, "POPULARITY")),
+      ...cells.map((c) => nearbyByType(key, { lat: c.lat, lng: c.lng }, c.radius, ["restaurant"], "DISTANCE")),
+      ...CATEGORY_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types, "DISTANCE")),
     ]);
     const results = settled.map((s) => (s.status === "fulfilled" ? s.value : { places: [], error: "request failed" }));
     const raw = results.flatMap((r) => r.places || []);
@@ -184,7 +187,7 @@ export default async function handler(req, res) {
       restaurants.push(r);
     }
     restaurants.sort((a, b) => a.distance - b.distance);
-    const trimmed = restaurants.slice(0, 90);
+    const trimmed = restaurants.slice(0, 120);
 
     res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=600");
     return res.status(200).json({ origin, count: trimmed.length, restaurants: trimmed, debug: trimmed.length ? undefined : firstError });
