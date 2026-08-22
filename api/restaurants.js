@@ -2,7 +2,7 @@
 // The app calls /api/restaurants?lat=..&lng=..  (or ?city=..) and gets a
 // clean, deduped list of nearby food spots across many categories.
 
-const PRICE_EST = { 1: 10, 2: 19, 3: 30 };
+const PRICE_EST = { 1: 10, 2: 19, 3: 50 };
 
 function priceFromLevel(level) {
   switch (level) {
