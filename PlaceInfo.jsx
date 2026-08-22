@@ -49,13 +49,13 @@ export default function PlaceInfo({ place, onClose }) {
   const gmaps = data?.googleMapsUri;
   const phone = data?.phone || place.phone;
   const address = data?.address || place.address;
+  const orderQ = encodeURIComponent(`${place.name} ${address || ""}`.trim());
 
   const linkBtn = { backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` };
 
   return (
     <div className="absolute inset-0 z-50 flex flex-col" style={{ backgroundColor: C.shell }}>
       {/* header */}
-    
       <div className="flex items-start justify-between px-5 pt-5 pb-3" style={{ borderBottom: `1px solid ${C.hairline}` }}>
         <div className="pr-3">
           <h2 className="font-display text-xl font-bold leading-tight" style={{ color: C.cream }}>{place.name}</h2>
@@ -138,6 +138,19 @@ export default function PlaceInfo({ place, onClose }) {
             </p>
           </div>
         )}
+
+        {/* Order online — searches the delivery apps for this spot */}
+        <div className="mt-5">
+          <p className="text-[12px] font-mono uppercase tracking-wide mb-2" style={{ color: C.muted }}>Order online</p>
+          <div className="grid grid-cols-3 gap-2">
+            <a href={`https://www.doordash.com/search/store/${orderQ}`} target="_blank" rel="noreferrer" className="text-center py-2 rounded-lg text-[11px] font-display font-semibold" style={linkBtn}>DoorDash</a>
+            <a href={`https://www.ubereats.com/search?q=${orderQ}`} target="_blank" rel="noreferrer" className="text-center py-2 rounded-lg text-[11px] font-display font-semibold" style={linkBtn}>Uber Eats</a>
+            <a href={`https://www.grubhub.com/search?queryText=${orderQ}`} target="_blank" rel="noreferrer" className="text-center py-2 rounded-lg text-[11px] font-display font-semibold" style={linkBtn}>Grubhub</a>
+          </div>
+          <p className="text-[10px] font-body mt-1.5" style={{ color: C.muted }}>
+            Opens a search on each app{website ? " — or use Menu / Site below to order direct." : "."}
+          </p>
+        </div>
       </div>
 
       {/* action buttons */}
