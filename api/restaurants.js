@@ -147,6 +147,8 @@ const CUISINE_QUERY = {
   "Brewpub": "brewery pub bar",
   "Vietnamese": "vietnamese restaurant",
   "Korean": "korean restaurant",
+  "Vegan": "vegan restaurant",
+  "Vegetarian": "vegetarian restaurant",
   "Convenience": "convenience store",
 };
 
