@@ -57,7 +57,7 @@ export function useRestaurants() {
   // Try location once on mount.
   useEffect(() => { useMyLocation(); }, [useMyLocation]);
 
-  return { restaurants, loading, error, label, needCity, setCity, useMyLocation };
+  return { restaurants, loading, error, label, needCity, setCity, useMyLocation, loadCoords: fetchByCoords };
 }
 
 // Directions link that opens the device's native maps app:
