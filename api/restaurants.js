@@ -63,31 +63,29 @@ function haversineMiles(a, b) {
 // Each call returns up to 20 of that type; ranked by DISTANCE so close-by
 // local spots win instead of distant popular chains.
 // Closest-first passes — fill the pool with what's genuinely nearby.
-// Non-restaurant food categories (searched once from the origin).
-const CATEGORY_GROUPS = [
+// Closest-first passes from the user's location.
+const DISTANCE_GROUPS = [
+  ["restaurant"],
   ["cafe", "coffee_shop"],
   ["bakery", "ice_cream_shop"],
   ["bar", "pub"],
   ["meal_takeaway", "fast_food_restaurant"],
 ];
 
-// Build a 3x3 grid of search cells covering the area, so each sub-area's
-// closest restaurants are captured — not just the 20 closest to one point.
-// This reliably pulls in local spots regardless of how Google tags them.
-function gridCells(origin, radiusMeters) {
-  const spanMi = radiusMeters / 1609;
-  const offMi = spanMi * 0.66;
-  const dLat = offMi / 69;
-  const dLng = offMi / (69 * Math.max(0.2, Math.cos((origin.lat * Math.PI) / 180)));
-  const cellRadius = Math.min(50000, Math.round(spanMi * 0.6 * 1609));
-  const cells = [];
-  for (const a of [-1, 0, 1]) {
-    for (const b of [-1, 0, 1]) {
-      cells.push({ lat: origin.lat + a * dLat, lng: origin.lng + b * dLng, radius: cellRadius });
-    }
-  }
-  return cells;
-}
+// Popularity + cuisine passes — surface well-known and specialty local spots
+// that aren't in the nearest 20.
+const POPULAR_GROUPS = [
+  ["restaurant"],
+  ["mexican_restaurant"],
+  ["chinese_restaurant", "vietnamese_restaurant"],
+  ["japanese_restaurant", "sushi_restaurant", "ramen_restaurant"],
+  ["korean_restaurant", "thai_restaurant", "indonesian_restaurant"],
+  ["italian_restaurant", "pizza_restaurant"],
+  ["indian_restaurant", "middle_eastern_restaurant", "mediterranean_restaurant"],
+  ["american_restaurant", "hamburger_restaurant", "barbecue_restaurant"],
+  ["breakfast_restaurant", "brunch_restaurant"],
+  ["sandwich_shop", "seafood_restaurant", "steak_house"],
+];
 
 const FIELD_MASK = [
   "places.id",
@@ -111,6 +109,28 @@ async function nearbyByType(key, origin, radiusMeters, includedTypes, rank) {
     locationRestriction: { circle },
   };
   const resp = await fetch("https://places.googleapis.com/v1/places:searchNearby", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Goog-Api-Key": key, "X-Goog-FieldMask": FIELD_MASK },
+    body: JSON.stringify(body),
+  });
+  if (!resp.ok) {
+    let msg = `HTTP ${resp.status}`;
+    try { const e = await resp.json(); msg = (e.error && e.error.message) || msg; } catch (_) {}
+    return { places: [], error: msg };
+  }
+  const data = await resp.json();
+  return { places: data.places || [], error: null };
+}
+
+// Keyword search — finds restaurants by relevance (name, popularity, category)
+// rather than strict type tags, so it catches local spots Google tags only as
+// a generic "restaurant". locationBias is valid here (Text Search).
+async function textSearchRestaurants(key, origin, radiusMeters) {
+  const body = {
+    textQuery: "restaurants",
+    locationBias: { circle: { center: { latitude: origin.lat, longitude: origin.lng }, radius: radiusMeters } },
+  };
+  const resp = await fetch("https://places.googleapis.com/v1/places:searchText", {
     method: "POST",
     headers: { "Content-Type": "application/json", "X-Goog-Api-Key": key, "X-Goog-FieldMask": FIELD_MASK },
     body: JSON.stringify(body),
@@ -152,10 +172,10 @@ export default async function handler(req, res) {
     if (!lat || !lng) return res.status(400).json({ error: "Provide lat/lng or a city." });
     const origin = { lat: Number(lat), lng: Number(lng) };
 
-    const cells = gridCells(origin, radiusMeters);
     const settled = await Promise.allSettled([
-      ...cells.map((c) => nearbyByType(key, { lat: c.lat, lng: c.lng }, c.radius, ["restaurant"], "DISTANCE")),
-      ...CATEGORY_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types, "DISTANCE")),
+      ...DISTANCE_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types, "DISTANCE")),
+      ...POPULAR_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types, "POPULARITY")),
+      textSearchRestaurants(key, origin, radiusMeters),
     ]);
     const results = settled.map((s) => (s.status === "fulfilled" ? s.value : { places: [], error: "request failed" }));
     const raw = results.flatMap((r) => r.places || []);
