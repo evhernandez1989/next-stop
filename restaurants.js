@@ -35,4 +35,5 @@ export const CUISINE_OPTIONS = [
   "Vietnamese", "Korean", "Indian", "Mediterranean", "American", "BBQ",
   "Fast Food", "Seafood", "Steakhouse", "Breakfast", "Sandwiches",
   "Cafe & Brunch", "Bakery", "Dessert", "Brewpub",
+  "Vegan", "Vegetarian",
 ];
