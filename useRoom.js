@@ -20,9 +20,12 @@ export function useRoom() {
   const [votes, setVotes] = useState([]);      // votes rows
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [hostCode, setHostCode] = useState(null); // room codes this device created
   const channelRef = useRef(null);
 
-  const isHost = !!room && room.host_id === deviceId;
+  // Host if the DB says so OR if this device created this room (covers the
+  // moment right after creating, before the room row round-trips back).
+  const isHost = !!code && ((room && room.host_id === deviceId) || code === hostCode);
   const myVote = votes.find((v) => v.device_id === deviceId)?.choice || null;
 
   // ── Load current snapshot of a room, then subscribe to live changes ──
@@ -80,6 +83,7 @@ export function useRoom() {
       if (insert.error) { c = randomCode(); insert = await supabase.from("rooms").insert({ code: c, host_id: deviceId, status: "lobby" }); }
       if (insert.error) throw insert.error;
       await supabase.from("players").upsert({ room_code: c, device_id: deviceId, name, is_host: true });
+      setHostCode(c);
       setCode(c);
       return c;
     } catch (e) {
@@ -115,6 +119,11 @@ export function useRoom() {
 
   // Open voting after the spin. Guarded so it only fires while still spinning;
   // any foreground client can call it and the first one wins (others no-op).
+  const saveMyLocation = useCallback(async (lat, lng) => {
+    if (!code) return;
+    await supabase.from("players").update({ lat, lng }).eq("room_code", code).eq("device_id", deviceId);
+  }, [code]);
+
   const endSpin = useCallback(async () => {
     if (!code) return;
     await supabase.from("rooms").update({ status: "voting" }).eq("code", code).eq("status", "spinning");
@@ -149,11 +158,12 @@ export function useRoom() {
   // ── Leave the room (remove this player) ──
   const leaveRoom = useCallback(async () => {
     if (code) await supabase.from("players").delete().eq("room_code", code).eq("device_id", deviceId);
+    setHostCode(null);
     setCode(null); setRoom(null); setPlayers([]); setVotes([]);
   }, [code, deviceId]);
 
   return {
     deviceId, code, room, players, votes, error, busy, isHost, myVote,
-    createRoom, joinRoom, spin, endSpin, castVote, lockIn, resetToLobby, leaveRoom,
+    createRoom, joinRoom, spin, endSpin, saveMyLocation, castVote, lockIn, resetToLobby, leaveRoom,
   };
 }
