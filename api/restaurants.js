@@ -21,15 +21,26 @@ function tierRange(price) {
 // Map Google place types -> our display cuisine (drives the app's icons).
 function cuisineFromTypes(types = []) {
   const t = new Set(types);
+  // Non-restaurants first, so a gas-station food mart isn't mislabeled as food.
+  if (t.has("gas_station") || t.has("convenience_store")) return "Convenience";
+  // Formats / specific cuisines
+  if (t.has("pizza_restaurant")) return "Pizza";
+  if (t.has("fast_food_restaurant") || t.has("hamburger_restaurant")) return "Fast Food";
   if (t.has("steak_house")) return "Steakhouse";
   if (t.has("seafood_restaurant")) return "Seafood";
-  if (t.has("pizza_restaurant") || t.has("italian_restaurant")) return "Italian";
+  if (t.has("mexican_restaurant")) return "Mexican";
+  if (t.has("chinese_restaurant")) return "Chinese";
+  if (t.has("japanese_restaurant") || t.has("sushi_restaurant") || t.has("ramen_restaurant")) return "Japanese";
+  if (t.has("thai_restaurant")) return "Thai";
+  if (t.has("indian_restaurant")) return "Indian";
+  if (t.has("italian_restaurant")) return "Italian";
   if (t.has("ice_cream_shop") || t.has("dessert_shop") || t.has("dessert_restaurant")) return "Dessert";
   if (t.has("bakery")) return "Bakery";
   if (t.has("coffee_shop") || t.has("cafe")) return "Cafe & Brunch";
   if (t.has("breakfast_restaurant") || t.has("brunch_restaurant")) return "Breakfast";
   if (t.has("bar") || t.has("pub") || t.has("brewery") || t.has("wine_bar")) return "Brewpub";
-  if (t.has("meal_takeaway") || t.has("fast_food_restaurant") || t.has("sandwich_shop")) return "American";
+  if (t.has("sandwich_shop") || t.has("deli")) return "Sandwiches";
+  if (t.has("meal_takeaway")) return "Fast Food";
   if (t.has("diner")) return "Diner";
   return "American";
 }
