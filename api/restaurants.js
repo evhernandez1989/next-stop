@@ -62,12 +62,20 @@ function haversineMiles(a, b) {
 // Query several categories so we don't miss cafes, ice cream, bakeries, etc.
 // Each call returns up to 20 of that type; ranked by DISTANCE so close-by
 // local spots win instead of distant popular chains.
-const TYPE_GROUPS = [
+// Closest-first passes — fill the pool with what's genuinely nearby.
+const DISTANCE_GROUPS = [
   ["restaurant"],
   ["cafe", "coffee_shop"],
   ["bakery", "ice_cream_shop"],
   ["bar", "pub"],
   ["meal_takeaway", "fast_food_restaurant"],
+];
+
+// Popularity passes — surface well-known local favorites that aren't in the
+// nearest 20. The first (generic "restaurant") catches notable spots even if
+// Google tagged their cuisine oddly.
+const POPULAR_GROUPS = [
+  ["restaurant"],
   ["mexican_restaurant"],
   ["chinese_restaurant", "vietnamese_restaurant"],
   ["japanese_restaurant", "sushi_restaurant", "ramen_restaurant"],
@@ -92,14 +100,15 @@ const FIELD_MASK = [
   "places.internationalPhoneNumber",
 ].join(",");
 
-async function nearbyByType(key, origin, radiusMeters, includedTypes) {
+async function nearbyByType(key, origin, radiusMeters, includedTypes, rank) {
+  const circle = { center: { latitude: origin.lat, longitude: origin.lng }, radius: radiusMeters };
   const body = {
     includedTypes,
     maxResultCount: 20,
-    rankPreference: "DISTANCE",
-    locationRestriction: {
-      circle: { center: { latitude: origin.lat, longitude: origin.lng }, radius: radiusMeters },
-    },
+    rankPreference: rank || "DISTANCE",
+    // DISTANCE requires a restriction (closest first); POPULARITY uses a bias
+    // so a well-known spot a bit farther out can still rank in.
+    ...(rank === "POPULARITY" ? { locationBias: circle } : { locationRestriction: circle }),
   };
   const resp = await fetch("https://places.googleapis.com/v1/places:searchNearby", {
     method: "POST",
@@ -139,9 +148,10 @@ export default async function handler(req, res) {
     if (!lat || !lng) return res.status(400).json({ error: "Provide lat/lng or a city." });
     const origin = { lat: Number(lat), lng: Number(lng) };
 
-    const settled = await Promise.allSettled(
-      TYPE_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types))
-    );
+    const settled = await Promise.allSettled([
+      ...DISTANCE_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types, "DISTANCE")),
+      ...POPULAR_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types, "POPULARITY")),
+    ]);
     const raw = settled.flatMap((s) => (s.status === "fulfilled" ? s.value : []));
 
     const seen = new Set();
