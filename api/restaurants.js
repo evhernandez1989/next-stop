@@ -125,9 +125,34 @@ async function nearbyByType(key, origin, radiusMeters, includedTypes, rank) {
 // Keyword search — finds restaurants by relevance (name, popularity, category)
 // rather than strict type tags, so it catches local spots Google tags only as
 // a generic "restaurant". locationBias is valid here (Text Search).
-async function textSearchRestaurants(key, origin, radiusMeters) {
+const CUISINE_QUERY = {
+  "Mexican": "mexican restaurant",
+  "Italian": "italian restaurant",
+  "Pizza": "pizza",
+  "Chinese": "chinese restaurant",
+  "Japanese": "japanese restaurant sushi",
+  "Thai & SE Asian": "thai restaurant",
+  "Indian": "indian restaurant",
+  "Mediterranean": "mediterranean restaurant",
+  "BBQ": "barbecue restaurant",
+  "American": "american restaurant",
+  "Fast Food": "fast food",
+  "Cafe & Brunch": "cafe coffee",
+  "Breakfast": "breakfast brunch",
+  "Dessert": "ice cream dessert",
+  "Bakery": "bakery",
+  "Sandwiches": "sandwich deli",
+  "Seafood": "seafood restaurant",
+  "Steakhouse": "steakhouse",
+  "Brewpub": "brewery pub bar",
+  "Vietnamese": "vietnamese restaurant",
+  "Korean": "korean restaurant",
+  "Convenience": "convenience store",
+};
+
+async function textSearchRestaurants(key, origin, radiusMeters, query) {
   const body = {
-    textQuery: "restaurants",
+    textQuery: query || "restaurants",
     locationBias: { circle: { center: { latitude: origin.lat, longitude: origin.lng }, radius: radiusMeters } },
   };
   const resp = await fetch("https://places.googleapis.com/v1/places:searchText", {
@@ -150,6 +175,7 @@ export default async function handler(req, res) {
 
   try {
     let { lat, lng, city, radius } = req.query;
+    const cuisines = (req.query.cuisines || "").split(",").map((s) => s.trim()).filter(Boolean);
     const radiusMeters = Math.min(50000, Math.max(1000, Number(radius) || 40000));
 
     if ((!lat || !lng) && city) {
@@ -172,11 +198,15 @@ export default async function handler(req, res) {
     if (!lat || !lng) return res.status(400).json({ error: "Provide lat/lng or a city." });
     const origin = { lat: Number(lat), lng: Number(lng) };
 
-    const settled = await Promise.allSettled([
-      ...DISTANCE_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types, "DISTANCE")),
-      ...POPULAR_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types, "POPULARITY")),
-      textSearchRestaurants(key, origin, radiusMeters),
-    ]);
+    const settled = await Promise.allSettled(
+      cuisines.length
+        ? cuisines.map((c) => textSearchRestaurants(key, origin, radiusMeters, CUISINE_QUERY[c] || `${c} restaurant`))
+        : [
+            ...DISTANCE_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types, "DISTANCE")),
+            ...POPULAR_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types, "POPULARITY")),
+            textSearchRestaurants(key, origin, radiusMeters, "restaurants"),
+          ]
+    );
     const results = settled.map((s) => (s.status === "fulfilled" ? s.value : { places: [], error: "request failed" }));
     const raw = results.flatMap((r) => r.places || []);
     const firstError = (results.find((r) => r.error) || {}).error || null;
