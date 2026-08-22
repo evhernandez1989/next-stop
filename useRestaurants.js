@@ -1,20 +1,38 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
-// Handles "where are we" + "what restaurants are near there":
-// tries the device GPS first, falls back to a typed city if location is
-// denied/unavailable, and fetches live results from our /api/restaurants
-// serverless function (which holds the Google key server-side).
-export function useRestaurants() {
+// Handles "where are we" + "what restaurants are near there".
+// Filters DRIVE the search: pass the selected cuisines and the distance, and
+// the hook re-queries Google whenever they change (not just slices a pool).
+export function useRestaurants({ cuisines = [], radiusMi } = {}) {
   const [restaurants, setRestaurants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [label, setLabel] = useState("");       // e.g. "Near you" or the city typed
-  const [needCity, setNeedCity] = useState(false); // true when we should prompt for a city
+  const [label, setLabel] = useState("");
+  const [needCity, setNeedCity] = useState(false);
+
+  // Current filter values kept in refs so the fetch function stays stable
+  // (no effect loops) while always reading the latest values.
+  const cuisinesKey = (cuisines || []).join(",");
+  const cuisinesRef = useRef(cuisinesKey);
+  const radiusRef = useRef(radiusMi);
+  cuisinesRef.current = cuisinesKey;
+  radiusRef.current = radiusMi;
+
+  // Last place we searched, so a filter change can re-run the same location.
+  const lastRef = useRef(null); // { lat, lng, label }
+
+  const buildQS = (base) => {
+    const parts = [base];
+    if (radiusRef.current) parts.push(`radius=${Math.round(radiusRef.current * 1609)}`);
+    if (cuisinesRef.current) parts.push(`cuisines=${encodeURIComponent(cuisinesRef.current)}`);
+    return parts.join("&");
+  };
 
   const fetchByCoords = useCallback(async (lat, lng, lbl) => {
+    lastRef.current = { lat, lng, label: lbl };
     setLoading(true); setError(null);
     try {
-      const res = await fetch(`/api/restaurants?lat=${lat}&lng=${lng}`);
+      const res = await fetch(`/api/restaurants?${buildQS(`lat=${lat}&lng=${lng}`)}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Couldn't load restaurants.");
       setRestaurants(data.restaurants || []);
@@ -31,12 +49,15 @@ export function useRestaurants() {
     if (!city || !city.trim()) return;
     setLoading(true); setError(null);
     try {
-      const res = await fetch(`/api/restaurants?city=${encodeURIComponent(city.trim())}`);
+      const res = await fetch(`/api/restaurants?${buildQS(`city=${encodeURIComponent(city.trim())}`)}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Couldn't find that place.");
       setRestaurants(data.restaurants || []);
       setLabel(city.trim());
       setNeedCity(false);
+      if (data.origin && typeof data.origin.lat === "number") {
+        lastRef.current = { lat: data.origin.lat, lng: data.origin.lng, label: city.trim() };
+      }
     } catch (e) {
       setError(e.message || "Couldn't find that place.");
     } finally {
@@ -49,13 +70,22 @@ export function useRestaurants() {
     if (!navigator.geolocation) { setNeedCity(true); setLoading(false); return; }
     navigator.geolocation.getCurrentPosition(
       (pos) => fetchByCoords(pos.coords.latitude, pos.coords.longitude, "Near you"),
-      () => { setNeedCity(true); setLoading(false); }, // denied or failed -> ask for a city
+      () => { setNeedCity(true); setLoading(false); },
       { timeout: 10000, maximumAge: 300000 }
     );
   }, [fetchByCoords]);
 
-  // Try location once on mount.
+  // Locate once on mount.
   useEffect(() => { useMyLocation(); }, [useMyLocation]);
+
+  // Re-query when the filters (cuisines / distance) change.
+  useEffect(() => {
+    if (lastRef.current) {
+      const { lat, lng, label: lbl } = lastRef.current;
+      fetchByCoords(lat, lng, lbl);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cuisinesKey, radiusMi]);
 
   return { restaurants, loading, error, label, needCity, setCity, useMyLocation, loadCoords: fetchByCoords };
 }
