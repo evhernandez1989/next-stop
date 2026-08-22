@@ -4,7 +4,7 @@ import {
   Info,
   MapPin, Users, Copy, Check, Crown, ArrowLeft, RotateCw, Wifi,
   UserPlus, ChevronRight, ChevronDown, Beef, Beer, Coffee, Fish, Pizza,
-  UtensilsCrossed, Sparkles, ThumbsUp, Trophy, Star, Phone, Navigation, Home,
+  UtensilsCrossed, Sparkles, ThumbsUp, Trophy, Star, Phone, Navigation, Home, Store,
 } from "lucide-react";
 import { useRoom } from "./useRoom";
 import { useRestaurants, directionsUrl } from "./useRestaurants";
@@ -22,7 +22,8 @@ const C = {
 const CUISINE_ICONS = {
   American: UtensilsCrossed, Eclectic: Sparkles, Seafood: Fish, Breakfast: Coffee,
   "Cafe & Brunch": Coffee, Brewpub: Beer, Steakhouse: Beef, Diner: UtensilsCrossed,
-  Italian: Pizza, "Brewery & Grill": Beer,
+  Italian: UtensilsCrossed, Pizza: Pizza, "Fast Food": Beef, Burgers: Beef, Convenience: Store,
+  "Brewery & Grill": Beer,
 };
 const AVATAR_COLORS = ["#7A2E2E", "#2E6B7A", "#7A5C2E", "#4A2E7A", "#2E7A4A"];
 
@@ -241,6 +242,7 @@ export default function NextStopMultiplayer({ onHome }) {
   const { restaurants, loading, error: locError, label, needCity, setCity, useMyLocation, loadCoords } = useRestaurants();
   const [showCity, setShowCity] = useState(false);
   const [optimizeMode, setOptimizeMode] = useState("middle"); // "middle" | "farthest"
+  const [manualOverride, setManualOverride] = useState(false); // host typed a specific area
   const savedLocRef = useRef(false);
 
   // Every participant shares their location once, saved to their player row.
@@ -262,11 +264,11 @@ export default function NextStopMultiplayer({ onHome }) {
     .map((p) => ({ lat: p.lat, lng: p.lng }));
   const pointsKey = partyPoints.map((p) => `${p.lat.toFixed(4)},${p.lng.toFixed(4)}`).join("|");
   useEffect(() => {
-    if (!r.isHost) return;
+    if (!r.isHost || manualOverride) return;
     const center = computeCenter(partyPoints, optimizeMode);
     if (center) loadCoords(center.lat, center.lng, `Group center · ${partyPoints.length} here`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pointsKey, optimizeMode, r.isHost]);
+  }, [pointsKey, optimizeMode, r.isHost, manualOverride]);
   const [cityInput, setCityInput] = useState("");
 
   // Host filters (mirrors solo): applied when the host spins.
@@ -439,23 +441,46 @@ export default function NextStopMultiplayer({ onHome }) {
             <div className="px-5 pt-3">
               <p className="flex items-center gap-1 text-[12px]" style={{ color: C.muted }}>
                 <MapPin size={12} />
-                {loading ? "Finding the group's spot…" : `${partyPoints.length} sharing location · ${hostPool.length} spots`}
+                {loading ? "Finding the group's spot…" : manualOverride ? (label || "Set area") : `${partyPoints.length} sharing location`}
+                {` · ${hostPool.length} spots`}
+                <button onClick={() => setShowCity((s) => !s)} className="ml-1 font-mono text-[11px]" style={{ color: C.amber }}>change</button>
               </p>
-              <div className="mt-2 flex gap-1.5">
-                <button onClick={() => setOptimizeMode("middle")}
-                  className="flex-1 text-[11px] font-display font-semibold py-2 rounded-lg transition-colors"
-                  style={optimizeMode === "middle" ? { backgroundColor: C.maroon, color: C.cream } : { backgroundColor: "transparent", color: C.creamDim, border: `1px solid ${C.hairline}` }}>
-                  Meet in the middle
-                </button>
-                <button onClick={() => setOptimizeMode("farthest")}
-                  className="flex-1 text-[11px] font-display font-semibold py-2 rounded-lg transition-colors"
-                  style={optimizeMode === "farthest" ? { backgroundColor: C.maroon, color: C.cream } : { backgroundColor: "transparent", color: C.creamDim, border: `1px solid ${C.hairline}` }}>
-                  Favor the farthest
-                </button>
-              </div>
-              <p className="text-[10px] font-body mt-1" style={{ color: C.muted }}>
-                {optimizeMode === "middle" ? "Searching the average of everyone's location." : "Shifting the search toward whoever's farthest out."}
-              </p>
+
+              {!manualOverride && (
+                <>
+                  <div className="mt-2 flex gap-1.5">
+                    <button onClick={() => setOptimizeMode("middle")}
+                      className="flex-1 text-[11px] font-display font-semibold py-2 rounded-lg transition-colors"
+                      style={optimizeMode === "middle" ? { backgroundColor: C.maroon, color: C.cream } : { backgroundColor: "transparent", color: C.creamDim, border: `1px solid ${C.hairline}` }}>
+                      Meet in the middle
+                    </button>
+                    <button onClick={() => setOptimizeMode("farthest")}
+                      className="flex-1 text-[11px] font-display font-semibold py-2 rounded-lg transition-colors"
+                      style={optimizeMode === "farthest" ? { backgroundColor: C.maroon, color: C.cream } : { backgroundColor: "transparent", color: C.creamDim, border: `1px solid ${C.hairline}` }}>
+                      Favor the farthest
+                    </button>
+                  </div>
+                  <p className="text-[10px] font-body mt-1" style={{ color: C.muted }}>
+                    {optimizeMode === "middle" ? "Searching the average of everyone's location." : "Shifting the search toward whoever's farthest out."}
+                  </p>
+                </>
+              )}
+
+              {manualOverride && (
+                <p className="text-[10px] font-body mt-1" style={{ color: C.muted }}>
+                  Searching a set area. <button onClick={() => { setManualOverride(false); setShowCity(false); }} style={{ color: C.amber }}>Use the group's location</button>
+                </p>
+              )}
+
+              {showCity && (
+                <div className="mt-2 flex gap-2">
+                  <input value={cityInput} onChange={(e) => setCityInput(e.target.value)} placeholder="City or address"
+                    className="flex-1 font-body text-[13px] px-3 py-2 rounded-lg outline-none"
+                    style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }} />
+                  <button onClick={() => { if (cityInput.trim()) { setCity(cityInput); setManualOverride(true); setShowCity(false); } }}
+                    className="px-3 py-2 rounded-lg font-display font-semibold text-[12px]" style={{ backgroundColor: C.maroon, color: C.cream }}>Go</button>
+                </div>
+              )}
               {locError && <p className="text-[11px] font-body mt-1" style={{ color: "#FF9B9B" }}>{locError}</p>}
             </div>
             <HostFilters
