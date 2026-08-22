@@ -113,9 +113,13 @@ async function nearbyByType(key, origin, radiusMeters, includedTypes, rank) {
     headers: { "Content-Type": "application/json", "X-Goog-Api-Key": key, "X-Goog-FieldMask": FIELD_MASK },
     body: JSON.stringify(body),
   });
-  if (!resp.ok) return [];
+  if (!resp.ok) {
+    let msg = `HTTP ${resp.status}`;
+    try { const e = await resp.json(); msg = (e.error && e.error.message) || msg; } catch (_) {}
+    return { places: [], error: msg };
+  }
   const data = await resp.json();
-  return data.places || [];
+  return { places: data.places || [], error: null };
 }
 
 export default async function handler(req, res) {
@@ -150,7 +154,9 @@ export default async function handler(req, res) {
       ...DISTANCE_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types, "DISTANCE")),
       ...POPULAR_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types, "POPULARITY")),
     ]);
-    const raw = settled.flatMap((s) => (s.status === "fulfilled" ? s.value : []));
+    const results = settled.map((s) => (s.status === "fulfilled" ? s.value : { places: [], error: "request failed" }));
+    const raw = results.flatMap((r) => r.places || []);
+    const firstError = (results.find((r) => r.error) || {}).error || null;
 
     const seen = new Set();
     const restaurants = [];
@@ -181,7 +187,7 @@ export default async function handler(req, res) {
     const trimmed = restaurants.slice(0, 90);
 
     res.setHeader("Cache-Control", "s-maxage=300, stale-while-revalidate=600");
-    return res.status(200).json({ origin, count: trimmed.length, restaurants: trimmed });
+    return res.status(200).json({ origin, count: trimmed.length, restaurants: trimmed, debug: trimmed.length ? undefined : firstError });
   } catch (e) {
     return res.status(500).json({ error: "Unexpected error fetching places." });
   }
