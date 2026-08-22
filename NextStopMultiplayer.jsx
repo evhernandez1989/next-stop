@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 import { useRoom } from "./useRoom";
 import { useRestaurants, directionsUrl } from "./useRestaurants";
-import { DATA, DEFAULT_TIERS, fmtTier } from "./restaurants";
+import { DATA, DEFAULT_TIERS, fmtTier, CUISINE_OPTIONS } from "./restaurants";
 import PlaceInfo from "./PlaceInfo";
 
 const C = {
@@ -238,12 +238,22 @@ export default function NextStopMultiplayer({ onHome }) {
   const [copied, setCopied] = useState(false);
   const [infoPlace, setInfoPlace] = useState(null);
 
-  // Host: live restaurants from device location (or a typed city).
-  const { restaurants, loading, error: locError, label, needCity, setCity, useMyLocation, loadCoords } = useRestaurants();
+  // Filters (declared before the data hook so they can drive the search).
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [cuisineFilter, setCuisineFilter] = useState(new Set());
+  const [priceFilter, setPriceFilter] = useState(new Set());
+  const [maxDistance, setMaxDistance] = useState(25);
+  const [tiers, setTiers] = useState(DEFAULT_TIERS);
+  const [priceEdit, setPriceEdit] = useState(false);
   const [showCity, setShowCity] = useState(false);
+  const [cityInput, setCityInput] = useState("");
   const [optimizeMode, setOptimizeMode] = useState("middle"); // "middle" | "farthest"
   const [manualOverride, setManualOverride] = useState(false); // host typed a specific area
   const savedLocRef = useRef(false);
+
+  // Host: live restaurants; cuisines + distance drive the search.
+  const { restaurants, loading, error: locError, label, needCity, setCity, useMyLocation, loadCoords } =
+    useRestaurants({ cuisines: [...cuisineFilter], radiusMi: maxDistance });
 
   // Every participant shares their location once, saved to their player row.
   useEffect(() => {
@@ -269,20 +279,10 @@ export default function NextStopMultiplayer({ onHome }) {
     if (center) loadCoords(center.lat, center.lng, `Group center · ${partyPoints.length} here`);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pointsKey, optimizeMode, r.isHost, manualOverride]);
-  const [cityInput, setCityInput] = useState("");
-
-  // Host filters (mirrors solo): applied when the host spins.
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [cuisineFilter, setCuisineFilter] = useState(new Set());
-  const [priceFilter, setPriceFilter] = useState(new Set());
-  const [maxDistance, setMaxDistance] = useState(25);
-  const [tiers, setTiers] = useState(DEFAULT_TIERS);
-  const [priceEdit, setPriceEdit] = useState(false);
-
-  const cuisines = useMemo(() => [...new Set(restaurants.map((x) => x.cuisine))].sort(), [restaurants]);
+  const cuisines = CUISINE_OPTIONS;
   const hostPool = restaurants.filter((x) => {
     if (x.distance > maxDistance) return false;
-    if (cuisineFilter.size > 0 && !cuisineFilter.has(x.cuisine)) return false;
+    // cuisine handled server-side (re-queries Google)
     if (priceFilter.size > 0) {
       const inRange = tiers.some((t) => priceFilter.has(t.id) && x.estCost >= t.min && x.estCost <= t.max);
       if (!inRange) return false;
