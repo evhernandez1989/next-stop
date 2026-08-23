@@ -79,7 +79,7 @@ const CUISINE_ICONS = {
   American: UtensilsCrossed, Eclectic: Sparkles, Seafood: Fish,
   Breakfast: Coffee, "Cafe & Brunch": Coffee, Brewpub: Beer,
   Steakhouse: Beef, Diner: UtensilsCrossed, Italian: UtensilsCrossed,
-  Pizza: Pizza, "Fast Food": Beef, Burgers: Beef, Convenience: Store, Vegan: Leaf, Vegetarian: Leaf,
+  Pizza: Pizza, "Fast Food": Beef, Burgers: Beef, Convenience: Store, Vegan: Leaf, Vegetarian: Leaf, Coffee: Coffee,
   "Brewery & Grill": Beer,
 };
 
