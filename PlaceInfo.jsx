@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { X, Star, Phone, Navigation, ExternalLink, Clock, UtensilsCrossed, MapPin } from "lucide-react";
+import { X, Star, Phone, Navigation, ExternalLink, Clock, UtensilsCrossed, MapPin, Bike } from "lucide-react";
 import { directionsUrl } from "./useRestaurants";
 
 const C = {
@@ -138,36 +138,32 @@ export default function PlaceInfo({ place, onClose }) {
             </p>
           </div>
         )}
-
-        {/* Order online — searches the delivery apps for this spot */}
-        <div className="mt-5">
-          <p className="text-[12px] font-mono uppercase tracking-wide mb-2" style={{ color: C.muted }}>Order online</p>
-          <div className="grid grid-cols-3 gap-2">
-            <a href={`https://www.doordash.com/search/store/${orderQ}`} target="_blank" rel="noreferrer" className="text-center py-2 rounded-lg text-[11px] font-display font-semibold" style={linkBtn}>DoorDash</a>
-            <a href={`https://www.ubereats.com/search?q=${orderQ}`} target="_blank" rel="noreferrer" className="text-center py-2 rounded-lg text-[11px] font-display font-semibold" style={linkBtn}>Uber Eats</a>
-            <a href={`https://www.grubhub.com/search?queryText=${orderQ}`} target="_blank" rel="noreferrer" className="text-center py-2 rounded-lg text-[11px] font-display font-semibold" style={linkBtn}>Grubhub</a>
-          </div>
-          <p className="text-[10px] font-body mt-1.5" style={{ color: C.muted }}>
-            Opens a search on each app{website ? " — or use Menu / Site below to order direct." : "."}
-          </p>
-        </div>
       </div>
 
-      {/* action buttons */}
+      {/* action buttons (always visible) */}
       <div className="px-5 py-4 grid grid-cols-2 gap-2" style={{ borderTop: `1px solid ${C.hairline}` }}>
         {website && (
           <a href={website} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[12px] font-display font-semibold" style={{ backgroundColor: C.maroon, color: C.cream }}>
             <UtensilsCrossed size={14} /> Menu / Site
           </a>
         )}
+        <a href={`https://www.doordash.com/search/store/${orderQ}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[12px] font-display font-semibold" style={linkBtn}>
+          <Bike size={14} /> DoorDash
+        </a>
+        <a href={`https://www.ubereats.com/search?q=${orderQ}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[12px] font-display font-semibold" style={linkBtn}>
+          <Bike size={14} /> Uber Eats
+        </a>
+        <a href={`https://www.grubhub.com/search?queryText=${orderQ}`} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[12px] font-display font-semibold" style={linkBtn}>
+          <Bike size={14} /> Grubhub
+        </a>
+        <a href={directionsUrl(place.name, address || "")} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[12px] font-display font-semibold" style={linkBtn}>
+          <Navigation size={14} /> Directions
+        </a>
         {gmaps && (
           <a href={gmaps} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[12px] font-display font-semibold" style={linkBtn}>
             <ExternalLink size={14} /> Google Maps
           </a>
         )}
-        <a href={directionsUrl(place.name, address || "")} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[12px] font-display font-semibold" style={linkBtn}>
-          <Navigation size={14} /> Directions
-        </a>
         {phone && (
           <a href={`tel:${phone}`} className="flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[12px] font-display font-semibold" style={linkBtn}>
             <Phone size={14} /> Call
