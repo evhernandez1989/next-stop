@@ -7,6 +7,7 @@ import {
   Leaf, UtensilsCrossed, Sparkles, ThumbsUp, Trophy, Star, Phone, Navigation, Home, Store,
 } from "lucide-react";
 import { useRoom } from "./useRoom";
+import TipBar from "./TipBar";
 import { useRestaurants, directionsUrl } from "./useRestaurants";
 import { DATA, DEFAULT_TIERS, fmtTier, CUISINE_OPTIONS } from "./restaurants";
 import PlaceInfo from "./PlaceInfo";
@@ -72,6 +73,7 @@ function Frame({ children }) {
       <div className="relative w-full max-w-[400px] rounded-[2.2rem] shadow-2xl overflow-hidden font-body"
         style={{ backgroundColor: C.shell, border: `6px solid ${C.shellBorder}`, minHeight: 640 }}>
         {children}
+        <TipBar />
       </div>
     </div>
   );
