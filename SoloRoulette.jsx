@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef } from "react";
 import { useRestaurants, directionsUrl } from "./useRestaurants";
 import { CUISINE_OPTIONS } from "./restaurants";
+import TipBar from "./TipBar";
 import PlaceInfo from "./PlaceInfo";
 import {
   Info,
@@ -757,6 +758,8 @@ export default function SoloRoulette({ onHome }) {
             </div>
           </div>
         )}
+
+        <TipBar />
 
         {/* Skip action sheet */}
         {skipSheet && result && (
