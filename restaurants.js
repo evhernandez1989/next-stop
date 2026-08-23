@@ -31,9 +31,9 @@ export function pickN(list, n) {
 // Google search (see the endpoint), so the list must be stable, not derived
 // from whatever happened to load.
 export const CUISINE_OPTIONS = [
-  "Mexican", "Italian", "Pizza", "Chinese", "Japanese", "Thai & SE Asian",
-  "Vietnamese", "Korean", "Indian", "Mediterranean", "American", "BBQ",
-  "Fast Food", "Seafood", "Steakhouse", "Breakfast", "Sandwiches",
-  "Cafe & Brunch", "Bakery", "Dessert", "Brewpub",
+  "Fast Food", "Pizza", "Coffee", "Mexican", "American", "Chinese",
+  "Italian", "Sandwiches", "Japanese", "BBQ", "Breakfast", "Seafood",
+  "Cafe & Brunch", "Dessert", "Bakery", "Thai & SE Asian", "Indian",
+  "Mediterranean", "Steakhouse", "Korean", "Vietnamese", "Brewpub",
   "Vegan", "Vegetarian",
 ];
