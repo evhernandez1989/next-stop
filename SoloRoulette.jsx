@@ -6,7 +6,7 @@ import {
   Info,
   MapPin, Phone, Navigation, RotateCw, Star, X, ChevronDown,
   Beef, Beer, Coffee, Fish, Pizza, Store, Leaf, UtensilsCrossed, Sparkles,
-  Users, ThumbsUp, SkipForward, Trophy, EyeOff, Undo2, Home,
+  Users, ThumbsUp, SkipForward, Trophy, EyeOff, Undo2, Home, ArrowLeft,
 } from "lucide-react";
 
 const USER = { lat: 39.94631853967538, lng: -85.81967778748043 };
@@ -234,6 +234,17 @@ export default function SoloRoulette({ onHome }) {
     setFn(next);
   }
 
+  // Cuisine chips: empty set = "all selected" (default). First tap narrows to
+  // just that one; tapping the rest off returns to the all-selected default.
+  function pickCuisine(c) {
+    setCuisineFilter((prev) => {
+      if (prev.size === 0) return new Set([c]);
+      const next = new Set(prev);
+      next.has(c) ? next.delete(c) : next.add(c);
+      return next;
+    });
+  }
+
   function pickFrom(list) {
     return list[Math.floor(Math.random() * list.length)];
   }
@@ -386,10 +397,10 @@ export default function SoloRoulette({ onHome }) {
             </div>
             <button
               onClick={onHome}
-              className="flex items-center gap-1 text-[10px] font-display font-semibold px-2.5 py-1.5 rounded-full"
-              style={chipOff}
+              className="flex items-center gap-1.5 text-[12px] font-display font-semibold px-3.5 py-2 rounded-full"
+              style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}`, color: C.cream }}
             >
-              <Home size={11} /> MODES
+              <ArrowLeft size={14} /> Modes
             </button>
           </div>
           <div className="mt-2">
@@ -441,14 +452,19 @@ export default function SoloRoulette({ onHome }) {
           {filtersOpen && (
             <div className="mt-3 space-y-3">
               <div>
-                <p className="text-[11px] font-mono mb-1.5 uppercase tracking-wide" style={{ color: C.muted }}>Cuisine</p>
+                <div className="flex items-center justify-between mb-1.5">
+                  <p className="text-[11px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>Cuisine</p>
+                  {cuisineFilter.size > 0 && (
+                    <button onClick={() => setCuisineFilter(new Set())} className="text-[11px] font-mono" style={{ color: C.amber }}>All</button>
+                  )}
+                </div>
                 <div className="flex flex-wrap gap-1.5">
                   {cuisines.map((c) => (
                     <button
                       key={c}
-                      onClick={() => toggleSet(setCuisineFilter, cuisineFilter, c)}
+                      onClick={() => pickCuisine(c)}
                       className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full font-body transition-colors"
-                      style={cuisineFilter.has(c) ? { ...chipOn, fontWeight: 600 } : chipOff}
+                      style={(cuisineFilter.size === 0 || cuisineFilter.has(c)) ? { ...chipOn, fontWeight: 600 } : chipOff}
                     >
                       <CuisineIcon cuisine={c} size={11} />
                       {c}
