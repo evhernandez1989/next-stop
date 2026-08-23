@@ -153,6 +153,35 @@ function Flap({ char }) {
   );
 }
 
+function SpinningTicket({ card, tick }) {
+  return (
+    <div className="rounded-xl overflow-hidden shadow-lg relative" style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}` }}>
+      <div className="absolute top-0 left-0 right-0 h-2" style={{ background: "repeating-linear-gradient(90deg,#7A2E2E 0 8px,transparent 8px 16px)" }} />
+      <div className="p-4 pt-5" style={{ perspective: "700px" }}>
+        <p className="font-mono text-[10px] tracking-widest uppercase mb-2" style={{ color: C.amber }}>Drawing your ticket…</p>
+        <div key={tick} style={{ animation: "cardflip 90ms ease-out" }} className="flex items-center gap-2">
+          <CuisineIcon cuisine={card?.cuisine || "American"} size={18} className="shrink-0" style={{ color: C.amber }} />
+          <h2 className="font-display text-xl font-bold leading-tight truncate" style={{ color: C.cream, filter: "blur(1.5px)", opacity: 0.8 }}>
+            {card?.name || "\u2026"}
+          </h2>
+        </div>
+        <div className="h-[62px]" />
+      </div>
+    </div>
+  );
+}
+
+function IdleTicket() {
+  return (
+    <div className="rounded-xl overflow-hidden relative" style={{ backgroundColor: C.board, border: `1px dashed ${C.hairline}` }}>
+      <div className="px-4 py-8 text-center">
+        <p className="font-mono text-[11px] tracking-widest uppercase" style={{ color: C.muted }}>Ready when you are</p>
+        <p className="font-display text-lg font-bold mt-1" style={{ color: C.creamDim }}>Tap spin to draw a spot</p>
+      </div>
+    </div>
+  );
+}
+
 function Board({ text }) {
   const padded = text.toUpperCase().padEnd(22, " ").slice(0, 22);
   return (
@@ -199,6 +228,8 @@ export default function SoloRoulette({ onHome }) {
   const [priceEdit, setPriceEdit] = useState(false);
   const [spinning, setSpinning] = useState(false);
   const [boardText, setBoardText] = useState("PULL THE LEVER");
+  const [spinCard, setSpinCard] = useState(null);
+  const [spinTick, setSpinTick] = useState(0);
   const [result, setResult] = useState(null);
   const [history, setHistory] = useState([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -254,7 +285,12 @@ export default function SoloRoulette({ onHome }) {
     let ticks = 0;
     const totalTicks = 18;
     intervalRef.current = setInterval(() => {
-      if (pool.length) setBoardText(pickFrom(pool).name);
+      if (pool.length) {
+        const pick = pickFrom(pool);
+        setBoardText(pick.name);
+        setSpinCard(pick);
+        setSpinTick((t) => t + 1);
+      }
       ticks++;
       if (ticks >= totalTicks) {
         clearInterval(intervalRef.current);
@@ -596,9 +632,75 @@ export default function SoloRoulette({ onHome }) {
           )}
         </div>
 
-        {/* Board */}
+        {/* Ticket — spins through options, then reveals */}
         <div className="px-5 pt-5 pb-2">
-          <Board text={boardText} />
+          {spinning ? (
+            <SpinningTicket card={spinCard} tick={spinTick} />
+          ) : result ? (
+            <div
+              className="rounded-xl overflow-hidden shadow-lg relative touch-pan-y select-none"
+              style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}`, transform: `translateX(${dragOffset}px) rotate(${dragOffset / 40}deg)`, transition: dragOffset === 0 ? "transform 0.2s" : "none" }}
+              onMouseDown={onPointerDown}
+              onMouseMove={(e) => e.buttons === 1 && onPointerMove(e)}
+              onMouseUp={onPointerUp}
+              onMouseLeave={() => dragOffset !== 0 && onPointerUp()}
+              onTouchStart={onPointerDown}
+              onTouchMove={onPointerMove}
+              onTouchEnd={onPointerUp}
+            >
+              <div className="absolute top-0 left-0 right-0 h-2" style={{ background: "repeating-linear-gradient(90deg,#7A2E2E 0 8px,transparent 8px 16px)" }} />
+              <div className="p-4 pt-5">
+                <div className="flex justify-between items-start">
+                  <div className="flex items-start gap-2">
+                    <CuisineIcon cuisine={result.cuisine} size={18} className="mt-1 shrink-0" style={{ color: C.amber }} />
+                    <div>
+                      <p className="font-mono text-[10px] tracking-widest uppercase" style={{ color: C.amber }}>Your Ticket</p>
+                      <h2 className="font-display text-xl font-bold leading-tight mt-0.5" style={{ color: C.cream }}>{result.name}</h2>
+                    </div>
+                  </div>
+                  <button onClick={() => setResult(null)} style={{ color: C.creamDim }}><X size={16} /></button>
+                </div>
+
+                <div className="flex items-center gap-3 mt-2 text-[12px] font-body" style={{ color: C.creamDim }}>
+                  <span className="flex items-center gap-1">
+                    <Star size={12} style={{ fill: C.amberStar, color: C.amberStar }} />
+                    {result.rating} ({result.ratingCount})
+                  </span>
+                  <span className="font-mono">{result.priceRange}/person</span>
+                  <span>{result.distance.toFixed(1)} mi</span>
+                </div>
+
+                <p className="text-[12px] mt-1.5" style={{ color: C.creamDim }}>{result.address}</p>
+
+                <div className="flex gap-2 mt-3">
+                  <a href={`tel:${result.phone}`} onClick={chooseThisPlace}
+                    className="flex-1 flex items-center justify-center gap-1.5 text-[12px] font-display font-medium py-2 rounded-md"
+                    style={{ backgroundColor: C.flap, color: C.cream }}>
+                    <Phone size={13} /> Call
+                  </a>
+                  <a
+                    href={directionsUrl(result.name, result.address)}
+                    target="_blank" rel="noreferrer" onClick={chooseThisPlace}
+                    className="flex-1 flex items-center justify-center gap-1.5 text-[12px] font-display font-medium py-2 rounded-md"
+                    style={{ backgroundColor: C.maroon, color: C.cream }}>
+                    <Navigation size={13} /> Directions
+                  </a>
+                  <button onClick={reroll}
+                    className="flex items-center justify-center gap-1 text-[12px] font-display font-medium py-2 px-3 rounded-md"
+                    style={{ backgroundColor: C.fill, color: C.cream, border: `1px solid ${C.hairline}` }}>
+                    <SkipForward size={13} />
+                  </button>
+                </div>
+                <button onClick={() => setInfoPlace(result)}
+                  className="w-full mt-2 flex items-center justify-center gap-1.5 text-[12px] font-display font-medium py-2 rounded-md"
+                  style={{ backgroundColor: C.fill, color: C.cream, border: `1px solid ${C.hairline}` }}>
+                  <Info size={13} /> More info about this spot
+                </button>
+              </div>
+            </div>
+          ) : (
+            <IdleTicket />
+          )}
         </div>
 
         {/* Spin */}
@@ -639,70 +741,7 @@ export default function SoloRoulette({ onHome }) {
           </div>
         )}
 
-        {/* Result ticket */}
-        {result && !spinning && (
-          <div
-            className="mx-5 mb-4 rounded-xl overflow-hidden shadow-lg relative touch-pan-y select-none"
-            style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}`, transform: `translateX(${dragOffset}px) rotate(${dragOffset / 40}deg)`, transition: dragOffset === 0 ? "transform 0.2s" : "none" }}
-            onMouseDown={onPointerDown}
-            onMouseMove={(e) => e.buttons === 1 && onPointerMove(e)}
-            onMouseUp={onPointerUp}
-            onMouseLeave={() => dragOffset !== 0 && onPointerUp()}
-            onTouchStart={onPointerDown}
-            onTouchMove={onPointerMove}
-            onTouchEnd={onPointerUp}
-          >
-            <div className="absolute top-0 left-0 right-0 h-2" style={{ background: "repeating-linear-gradient(90deg,#7A2E2E 0 8px,transparent 8px 16px)" }} />
-            <div className="p-4 pt-5">
-              <div className="flex justify-between items-start">
-                <div className="flex items-start gap-2">
-                  <CuisineIcon cuisine={result.cuisine} size={18} className="mt-1 shrink-0" style={{ color: C.amber }} />
-                  <div>
-                    <p className="font-mono text-[10px] tracking-widest uppercase" style={{ color: C.amber }}>Your Ticket</p>
-                    <h2 className="font-display text-xl font-bold leading-tight mt-0.5" style={{ color: C.cream }}>{result.name}</h2>
-                  </div>
-                </div>
-                <button onClick={() => setResult(null)} style={{ color: C.creamDim }}><X size={16} /></button>
-              </div>
-
-              <div className="flex items-center gap-3 mt-2 text-[12px] font-body" style={{ color: C.creamDim }}>
-                <span className="flex items-center gap-1">
-                  <Star size={12} style={{ fill: C.amberStar, color: C.amberStar }} />
-                  {result.rating} ({result.ratingCount})
-                </span>
-                <span className="font-mono">{result.priceRange}/person</span>
-                <span>{result.distance.toFixed(1)} mi</span>
-              </div>
-
-              <p className="text-[12px] mt-1.5" style={{ color: C.creamDim }}>{result.address}</p>
-
-              <div className="flex gap-2 mt-3">
-                <a href={`tel:${result.phone}`} onClick={chooseThisPlace}
-                  className="flex-1 flex items-center justify-center gap-1.5 text-[12px] font-display font-medium py-2 rounded-md"
-                  style={{ backgroundColor: C.flap, color: C.cream }}>
-                  <Phone size={13} /> Call
-                </a>
-                <a
-                  href={directionsUrl(result.name, result.address)}
-                  target="_blank" rel="noreferrer" onClick={chooseThisPlace}
-                  className="flex-1 flex items-center justify-center gap-1.5 text-[12px] font-display font-medium py-2 rounded-md"
-                  style={{ backgroundColor: C.maroon, color: C.cream }}>
-                  <Navigation size={13} /> Directions
-                </a>
-                <button onClick={reroll}
-                  className="flex items-center justify-center gap-1 text-[12px] font-display font-medium py-2 px-3 rounded-md"
-                  style={{ backgroundColor: C.fill, color: C.cream, border: `1px solid ${C.hairline}` }}>
-                  <SkipForward size={13} />
-                </button>
-              </div>
-              <button onClick={() => setInfoPlace(result)}
-                className="w-full mt-2 flex items-center justify-center gap-1.5 text-[12px] font-display font-medium py-2 rounded-md"
-                style={{ backgroundColor: C.fill, color: C.cream, border: `1px solid ${C.hairline}` }}>
-                <Info size={13} /> More info about this spot
-              </button>
-            </div>
-          </div>
-        )}
+        {/* Result ticket now rendered above (unified spin+reveal ticket) */}
 
         {/* History */}
         {history.length > 1 && (
