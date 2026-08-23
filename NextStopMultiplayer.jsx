@@ -127,12 +127,18 @@ function HostFilters({
       {filtersOpen && (
         <div className="mt-3 space-y-3">
           <div>
-            <p className="text-[11px] font-mono mb-1.5 uppercase tracking-wide" style={{ color: C.muted }}>Cuisine</p>
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="text-[11px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>Cuisine</p>
+              {cuisineFilter.size > 0 && (
+                <button onClick={() => setCuisineFilter(new Set())} className="text-[11px] font-mono" style={{ color: C.amber }}>All</button>
+              )}
+            </div>
             <div className="flex flex-wrap gap-1.5">
               {cuisines.map((c) => (
-                <button key={c} onClick={() => toggleSet(setCuisineFilter, cuisineFilter, c)}
+                <button key={c}
+                  onClick={() => setCuisineFilter((prev) => { if (prev.size === 0) return new Set([c]); const n = new Set(prev); n.has(c) ? n.delete(c) : n.add(c); return n; })}
                   className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full font-body transition-colors"
-                  style={cuisineFilter.has(c) ? { ...chipOn, fontWeight: 600 } : chipOff}>
+                  style={(cuisineFilter.size === 0 || cuisineFilter.has(c)) ? { ...chipOn, fontWeight: 600 } : chipOff}>
                   <CuisineIcon cuisine={c} size={11} />{c}
                 </button>
               ))}
@@ -328,8 +334,8 @@ export default function NextStopMultiplayer({ onHome }) {
       return (
         <Frame>
           <div className="px-5 pt-2 pb-4" style={{ borderBottom: `1px solid ${C.hairlineSoft}` }}>
-            <button onClick={onHome} className="flex items-center gap-1 text-[12px] font-mono mb-2" style={{ color: C.muted }}>
-              <Home size={12} /> modes
+            <button onClick={onHome} className="flex items-center gap-1.5 text-[12px] font-display font-semibold px-3.5 py-2 rounded-full mb-2" style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}`, color: C.cream }}>
+              <ArrowLeft size={14} /> Modes
             </button>
             <h1 className="font-display text-3xl font-bold tracking-tight leading-none" style={{ color: C.cream }}>NEXT STOP</h1>
             <p className="font-mono text-[11px] mt-1 tracking-widest uppercase" style={{ color: C.amber }}>Group Roulette</p>
@@ -380,8 +386,8 @@ export default function NextStopMultiplayer({ onHome }) {
           <p className="font-mono text-[11px] mt-1 tracking-widest uppercase" style={{ color: C.amber }}>Join a Room</p>
         </div>
         <div className="px-5 pt-6 pb-4">
-          <button onClick={() => setScreen("entry")} className="flex items-center gap-1 text-[12px] font-mono mb-5" style={{ color: C.muted }}>
-            <ArrowLeft size={13} /> back
+          <button onClick={() => setScreen("entry")} className="flex items-center gap-1.5 text-[12px] font-display font-semibold px-3.5 py-2 rounded-full mb-5" style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}`, color: C.cream }}>
+            <ArrowLeft size={14} /> Back
           </button>
           {r.error && <p className="text-[12px] mb-3" style={{ color: "#FF9B9B" }}>{r.error}</p>}
           <p className="text-[11px] font-mono uppercase tracking-wide mb-2" style={{ color: C.muted }}>Room code</p>
@@ -408,8 +414,8 @@ export default function NextStopMultiplayer({ onHome }) {
 
   const RoomHeader = ({ label, connected }) => (
     <div className="px-5 pt-3 pb-3" style={{ borderBottom: `1px solid ${C.hairlineSoft}` }}>
-      <button onClick={r.leaveRoom} className="flex items-center gap-1 text-[12px] font-mono mb-2" style={{ color: C.muted }}>
-        <ArrowLeft size={13} /> leave
+      <button onClick={r.leaveRoom} className="flex items-center gap-1.5 text-[12px] font-display font-semibold px-3.5 py-2 rounded-full mb-2" style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}`, color: C.cream }}>
+        <ArrowLeft size={14} /> Leave
       </button>
       <div className="flex items-center gap-2">
         <span className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-full" style={{ backgroundColor: C.fill, color: C.green }}>
