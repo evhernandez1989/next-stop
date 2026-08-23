@@ -3,3 +3,8 @@
 @tailwind utilities;
 
 html, body, #root { margin: 0; padding: 0; background: #0D1013; min-height: 100%; }
+
+@keyframes cardflip {
+  0%   { transform: rotateX(-88deg); opacity: 0.25; }
+  100% { transform: rotateX(0deg);   opacity: 1; }
+}
