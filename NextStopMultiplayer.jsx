@@ -61,6 +61,42 @@ function SpinBoard({ names }) {
   return <Board text={txt} />;
 }
 
+// Three ticket tiles that flip through candidate spots while the group spins —
+// matches the solo ticket-flip look. Purely visual; the real candidates arrive
+// via the synced room state and are shown on the voting screen.
+function SpinTiles({ candidates }) {
+  const pool = candidates && candidates.length ? candidates : [];
+  const [cards, setCards] = useState([0, 1, 2]);
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => {
+      setCards([Math.random(), Math.random(), Math.random()]);
+      setTick((t) => t + 1);
+    }, 100);
+    return () => clearInterval(id);
+  }, []);
+  const pick = (seed) => (pool.length ? pool[Math.floor(seed * pool.length) % pool.length] : null);
+  return (
+    <div className="space-y-2" style={{ perspective: "700px" }}>
+      {cards.map((seed, i) => {
+        const c = pick(seed);
+        return (
+          <div key={`${i}-${tick}`} className="rounded-xl overflow-hidden relative"
+            style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}`, animation: "cardflip 100ms ease-out" }}>
+            <div className="absolute top-0 left-0 right-0 h-1.5" style={{ background: "repeating-linear-gradient(90deg,#7A2E2E 0 8px,transparent 8px 16px)" }} />
+            <div className="px-3 py-3 pt-4 flex items-center gap-2">
+              <CuisineIcon cuisine={c?.cuisine || "American"} size={16} style={{ color: C.amber }} />
+              <span className="font-display font-bold text-[15px] truncate" style={{ color: C.cream, filter: "blur(1.5px)", opacity: 0.8 }}>
+                {c?.name || "\u2026"}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function Frame({ children }) {
   return (
     <div className="min-h-screen w-full flex items-center justify-center py-8 px-3" style={{ backgroundColor: C.page }}>
@@ -532,7 +568,7 @@ export default function NextStopMultiplayer({ onHome }) {
         <div className="px-5 pt-8 pb-3 text-center">
           <p className="font-mono text-[11px] tracking-widest uppercase" style={{ color: C.amber }}>Spinning…</p>
         </div>
-        <div className="px-5 pb-4"><SpinBoard names={(r.room?.candidates || []).map((c) => c.name)} /></div>
+        <div className="px-5 pb-4"><SpinTiles candidates={r.room?.candidates || []} /></div>
         <p className="px-5 pb-8 text-center text-[12px] font-body" style={{ color: C.creamDim }}>
           Picking three spots for the group — get ready to vote.
         </p>
