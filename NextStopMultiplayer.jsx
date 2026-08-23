@@ -22,7 +22,7 @@ const C = {
 const CUISINE_ICONS = {
   American: UtensilsCrossed, Eclectic: Sparkles, Seafood: Fish, Breakfast: Coffee,
   "Cafe & Brunch": Coffee, Brewpub: Beer, Steakhouse: Beef, Diner: UtensilsCrossed,
-  Italian: UtensilsCrossed, Pizza: Pizza, "Fast Food": Beef, Burgers: Beef, Convenience: Store, Vegan: Leaf, Vegetarian: Leaf,
+  Italian: UtensilsCrossed, Pizza: Pizza, "Fast Food": Beef, Burgers: Beef, Convenience: Store, Vegan: Leaf, Vegetarian: Leaf, Coffee: Coffee,
   "Brewery & Grill": Beer,
 };
 const AVATAR_COLORS = ["#7A2E2E", "#2E6B7A", "#7A5C2E", "#4A2E7A", "#2E7A4A"];
