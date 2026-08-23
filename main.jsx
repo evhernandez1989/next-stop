@@ -4,6 +4,7 @@ import ReactDOM from "react-dom/client";
 import { Users, User, MapPin, ChevronRight, Dices } from "lucide-react";
 import SoloRoulette from "./SoloRoulette.jsx";
 import NextStopMultiplayer from "./NextStopMultiplayer.jsx";
+import { Analytics } from "@vercel/analytics/react";
 import "./index.css";
 
 const C = {
@@ -77,9 +78,14 @@ function App() {
     try { return new URLSearchParams(window.location.search).get("room") ? "group" : "home"; }
     catch { return "home"; }
   });
-  if (mode === "solo") return <SoloRoulette onHome={() => setMode("home")} />;
-  if (mode === "group") return <NextStopMultiplayer onHome={() => setMode("home")} />;
-  return <HomeScreen onSolo={() => setMode("solo")} onGroup={() => setMode("group")} />;
+  return (
+    <>
+      {mode === "solo" && <SoloRoulette onHome={() => setMode("home")} />}
+      {mode === "group" && <NextStopMultiplayer onHome={() => setMode("home")} />}
+      {mode === "home" && <HomeScreen onSolo={() => setMode("solo")} onGroup={() => setMode("group")} />}
+      <Analytics />
+    </>
+  );
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);
