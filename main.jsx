@@ -1,4 +1,5 @@
 import { useState } from "react";
+import TipBar from "./TipBar";
 import ReactDOM from "react-dom/client";
 import { Users, User, MapPin, ChevronRight, Dices } from "lucide-react";
 import SoloRoulette from "./SoloRoulette.jsx";
@@ -64,21 +65,7 @@ function HomeScreen({ onSolo, onGroup }) {
             </p>
           </div>
 
-          <div className="mt-6 text-center">
-            <p className="text-[11px] font-mono uppercase tracking-widest mb-2" style={{ color: C.muted }}>☕ Enjoying Next Stop?</p>
-            <div className="flex gap-2 justify-center">
-              <a href="https://cash.app/$adubbsking24" target="_blank" rel="noreferrer"
-                className="flex-1 max-w-[160px] text-center py-2 rounded-lg text-[12px] font-display font-semibold"
-                style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }}>
-                Tip via Cash App
-              </a>
-              <a href="https://venmo.com/u/Ellie-Hernandez" target="_blank" rel="noreferrer"
-                className="flex-1 max-w-[160px] text-center py-2 rounded-lg text-[12px] font-display font-semibold"
-                style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }}>
-                Tip via Venmo
-              </a>
-            </div>
-          </div>
+          <TipBar />
         </div>
       </div>
     </div>
