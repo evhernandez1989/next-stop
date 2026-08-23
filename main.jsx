@@ -2,6 +2,7 @@ import { useState } from "react";
 import TipBar from "./TipBar";
 import ReactDOM from "react-dom/client";
 import { Users, User, MapPin, ChevronRight, Dices } from "lucide-react";
+import { Analytics } from "@vercel/analytics/react";
 import SoloRoulette from "./SoloRoulette.jsx";
 import NextStopMultiplayer from "./NextStopMultiplayer.jsx";
 import "./index.css";
@@ -82,7 +83,12 @@ function App() {
   return <HomeScreen onSolo={() => setMode("solo")} onGroup={() => setMode("group")} />;
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <>
+    <App />
+    <Analytics />
+  </>
+);
 
 // Register the service worker so the app is installable (Add to Home Screen).
 if ("serviceWorker" in navigator) {
