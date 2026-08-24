@@ -1,16 +1,15 @@
 import { useState } from "react";
 import TipBar from "./TipBar";
 import ReactDOM from "react-dom/client";
-import { Users, User, MapPin, ChevronRight, Dices } from "lucide-react";
+import { Users, User, MapPin, ChevronRight, ChevronsRight, Dices } from "lucide-react";
 import SoloRoulette from "./SoloRoulette.jsx";
 import NextStopMultiplayer from "./NextStopMultiplayer.jsx";
-import { Analytics } from "@vercel/analytics/react";
 import "./index.css";
 
 const C = {
-  page: "#0D1013", shell: "#20262E", shellBorder: "#0A0C0E", card: "#2E3742",
-  amber: "#F2B705", cream: "#F5EFE0", creamDim: "#C7CDD6", muted: "#8B93A1",
-  maroon: "#7A2E2E", hairline: "rgba(255,255,255,0.10)", fill: "rgba(255,255,255,0.06)",
+  page: "#0B1020", shell: "#12224A", shellBorder: "#05070D", card: "#173063",
+  amber: "#E23636", cream: "#F4F7FF", creamDim: "#B9CBF0", muted: "#7C93C4",
+  maroon: "#E23636", hairline: "rgba(90,150,255,0.20)", fill: "rgba(90,150,255,0.10)",
 };
 
 function HomeScreen({ onSolo, onGroup }) {
@@ -37,28 +36,24 @@ function HomeScreen({ onSolo, onGroup }) {
         <div className="px-5 pb-8">
           <p className="text-[11px] font-mono uppercase tracking-wide mb-3" style={{ color: C.muted }}>How do you want to decide?</p>
           <button onClick={onSolo}
-            className="w-full flex items-center justify-between px-4 py-4 rounded-xl mb-3 active:scale-[0.98] transition-transform"
-            style={{ backgroundColor: C.maroon, color: C.cream }}>
-            <span className="flex items-center gap-3">
-              <User size={20} />
-              <span className="text-left">
-                <span className="block font-display font-semibold text-[15px] leading-tight">Just me</span>
-                <span className="block text-[11px] font-body leading-tight" style={{ color: "#E8D5D5" }}>Spin solo with filters &amp; skips</span>
-              </span>
+            className="w-full flex items-center gap-3 px-4 py-4 rounded-xl mb-3 active:translate-x-[2px] active:translate-y-[2px] transition-transform"
+            style={{ backgroundColor: C.card, color: C.cream, border: "2.5px solid #FFFFFF", boxShadow: "4px 4px 0 rgba(0,0,0,0.55)" }}>
+            <User size={22} />
+            <span className="flex-1 text-left">
+              <span className="block font-display font-bold text-[16px] uppercase tracking-wide leading-tight">Just me</span>
+              <span className="block text-[11px] font-body font-semibold leading-tight mt-0.5" style={{ color: C.amber }}>Spin solo with filters &amp; skips</span>
             </span>
-            <ChevronRight size={18} />
+            <ChevronsRight size={20} />
           </button>
           <button onClick={onGroup}
-            className="w-full flex items-center justify-between px-4 py-4 rounded-xl active:scale-[0.98] transition-transform"
-            style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }}>
-            <span className="flex items-center gap-3">
-              <Users size={20} style={{ color: C.amber }} />
-              <span className="text-left">
-                <span className="block font-display font-semibold text-[15px] leading-tight">With a group</span>
-                <span className="block text-[11px] font-body leading-tight" style={{ color: C.creamDim }}>Everyone joins &amp; votes from their phone</span>
-              </span>
+            className="w-full flex items-center gap-3 px-4 py-4 rounded-xl active:translate-x-[2px] active:translate-y-[2px] transition-transform"
+            style={{ backgroundColor: C.card, color: C.cream, border: "2.5px solid #FFFFFF", boxShadow: "4px 4px 0 rgba(0,0,0,0.55)" }}>
+            <Users size={22} />
+            <span className="flex-1 text-left">
+              <span className="block font-display font-bold text-[16px] uppercase tracking-wide leading-tight">With a group</span>
+              <span className="block text-[11px] font-body font-semibold leading-tight mt-0.5" style={{ color: C.amber }}>Everyone joins &amp; votes from their phone</span>
             </span>
-            <ChevronRight size={18} style={{ color: C.muted }} />
+            <ChevronsRight size={20} />
           </button>
           <div className="mt-8 rounded-xl p-3" style={{ backgroundColor: C.fill }}>
             <p className="text-[12px] font-body leading-snug" style={{ color: C.creamDim }}>
@@ -78,14 +73,9 @@ function App() {
     try { return new URLSearchParams(window.location.search).get("room") ? "group" : "home"; }
     catch { return "home"; }
   });
-  return (
-    <>
-      {mode === "solo" && <SoloRoulette onHome={() => setMode("home")} />}
-      {mode === "group" && <NextStopMultiplayer onHome={() => setMode("home")} />}
-      {mode === "home" && <HomeScreen onSolo={() => setMode("solo")} onGroup={() => setMode("group")} />}
-      <Analytics />
-    </>
-  );
+  if (mode === "solo") return <SoloRoulette onHome={() => setMode("home")} />;
+  if (mode === "group") return <NextStopMultiplayer onHome={() => setMode("home")} />;
+  return <HomeScreen onSolo={() => setMode("solo")} onGroup={() => setMode("group")} />;
 }
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);
