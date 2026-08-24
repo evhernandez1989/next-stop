@@ -3,10 +3,10 @@ import { X, Star, Phone, Navigation, ExternalLink, Clock, UtensilsCrossed, MapPi
 import { directionsUrl } from "./useRestaurants";
 
 const C = {
-  shell: "#20262E", card: "#2E3742", board: "#1B1F26", flap: "#14171B",
-  amber: "#F2B705", amberStar: "#E8A33D", cream: "#F5EFE0", creamDim: "#C7CDD6",
-  muted: "#8B93A1", maroon: "#7A2E2E",
-  hairline: "rgba(255,255,255,0.10)", fill: "rgba(255,255,255,0.06)",
+  shell: "#12224A", card: "#173063", board: "#0E1B3D", flap: "#0A1330",
+  amber: "#E23636", amberStar: "#F0C808", cream: "#F4F7FF", creamDim: "#B9CBF0",
+  muted: "#7C93C4", maroon: "#E23636",
+  hairline: "rgba(90,150,255,0.20)", fill: "rgba(90,150,255,0.10)",
 };
 
 function Stars({ rating }) {
