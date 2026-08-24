@@ -13,11 +13,11 @@ import { DATA, DEFAULT_TIERS, fmtTier, CUISINE_OPTIONS } from "./restaurants";
 import PlaceInfo from "./PlaceInfo";
 
 const C = {
-  page: "#0D1013", shell: "#20262E", shellBorder: "#0A0C0E", card: "#2E3742",
-  board: "#1B1F26", flap: "#14171B", amber: "#F2B705", amberStar: "#E8A33D",
-  cream: "#F5EFE0", creamDim: "#C7CDD6", muted: "#8B93A1", maroon: "#7A2E2E",
-  maroonDeep: "#3A2222", green: "#4FB477", hairline: "rgba(255,255,255,0.10)",
-  hairlineSoft: "rgba(255,255,255,0.06)", fill: "rgba(255,255,255,0.06)",
+  page: "#0B1020", shell: "#12224A", shellBorder: "#05070D", card: "#173063",
+  board: "#0E1B3D", flap: "#0A1330", amber: "#E23636", amberStar: "#F0C808",
+  cream: "#F4F7FF", creamDim: "#B9CBF0", muted: "#7C93C4", maroon: "#E23636",
+  maroonDeep: "#7A1515", green: "#4FB477", hairline: "rgba(90,150,255,0.20)",
+  hairlineSoft: "rgba(90,150,255,0.10)", fill: "rgba(90,150,255,0.10)",
 };
 
 const CUISINE_ICONS = {
@@ -26,7 +26,7 @@ const CUISINE_ICONS = {
   Italian: UtensilsCrossed, Pizza: Pizza, "Fast Food": Beef, Burgers: Beef, Convenience: Store, Vegan: Leaf, Vegetarian: Leaf, Coffee: Coffee,
   "Brewery & Grill": Beer,
 };
-const AVATAR_COLORS = ["#7A2E2E", "#2E6B7A", "#7A5C2E", "#4A2E7A", "#2E7A4A"];
+const AVATAR_COLORS = ["#E23636", "#2E6B7A", "#7A5C2E", "#4A2E7A", "#2E7A4A"];
 
 function hashStr(s) { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; }
 function initials(name) { return (name || "?").trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase(); }
@@ -83,7 +83,7 @@ function SpinTiles({ candidates }) {
         return (
           <div key={`${i}-${tick}`} className="rounded-xl overflow-hidden relative"
             style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}`, animation: "cardflip 100ms ease-out" }}>
-            <div className="absolute top-0 left-0 right-0 h-1.5" style={{ background: "repeating-linear-gradient(90deg,#7A2E2E 0 8px,transparent 8px 16px)" }} />
+            <div className="absolute top-0 left-0 right-0 h-1.5" style={{ background: "repeating-linear-gradient(90deg,#E23636 0 8px,transparent 8px 16px)" }} />
             <div className="px-3 py-3 pt-4 flex items-center gap-2">
               <CuisineIcon cuisine={c?.cuisine || "American"} size={16} style={{ color: C.amber }} />
               <span className="font-display font-bold text-[15px] truncate" style={{ color: C.cream, filter: "blur(1.5px)", opacity: 0.8 }}>
@@ -651,7 +651,7 @@ export default function NextStopMultiplayer({ onHome }) {
       </div>
       {w && (
         <div className="mx-5 mb-4 rounded-xl overflow-hidden shadow-lg relative" style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}` }}>
-          <div className="absolute top-0 left-0 right-0 h-2" style={{ background: "repeating-linear-gradient(90deg,#7A2E2E 0 8px,transparent 8px 16px)" }} />
+          <div className="absolute top-0 left-0 right-0 h-2" style={{ background: "repeating-linear-gradient(90deg,#E23636 0 8px,transparent 8px 16px)" }} />
           <div className="p-4 pt-5">
             <div className="flex items-start gap-2">
               <CuisineIcon cuisine={w.cuisine} size={18} style={{ color: C.amber, marginTop: 4 }} />
@@ -704,10 +704,10 @@ export default function NextStopMultiplayer({ onHome }) {
 function NameField({ name, setName }) {
   return (
     <div>
-      <p className="text-[11px] font-mono uppercase tracking-wide mb-2" style={{ color: "#8B93A1" }}>Your name</p>
+      <p className="text-[11px] font-mono uppercase tracking-wide mb-2" style={{ color: "#7C93C4" }}>Your name</p>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Sam"
         className="w-full font-body text-[15px] px-3 py-2.5 rounded-lg outline-none"
-        style={{ backgroundColor: "#2E3742", color: "#F5EFE0", border: "1px solid rgba(255,255,255,0.10)" }} />
+        style={{ backgroundColor: "#173063", color: "#F4F7FF", border: "1px solid rgba(255,255,255,0.10)" }} />
     </div>
   );
 }
