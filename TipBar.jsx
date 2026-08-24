@@ -2,10 +2,10 @@ import React from "react";
 
 // Tip jar shown across the app. Handles live here only — change them in one place.
 const T = {
-  card: "#2E3742",
-  cream: "#F5EFE0",
-  muted: "#8B93A1",
-  hairline: "rgba(255,255,255,0.10)",
+  card: "#173063",
+  cream: "#F4F7FF",
+  muted: "#7C93C4",
+  hairline: "rgba(90,150,255,0.20)",
 };
 
 const CASHAPP_URL = "https://cash.app/$adubbsking24";
