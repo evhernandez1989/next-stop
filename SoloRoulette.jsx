@@ -39,22 +39,22 @@ const RESTAURANTS = [
 // Central palette — every color is applied via inline styles because this render
 // environment does not reliably compile Tailwind arbitrary color utilities.
 const C = {
-  page: "#0D1013",
-  shell: "#20262E",
-  shellBorder: "#0A0C0E",
-  card: "#2E3742",
-  board: "#1B1F26",
-  flap: "#14171B",
-  amber: "#F2B705",
-  amberStar: "#E8A33D",
-  cream: "#F5EFE0",
-  creamDim: "#C7CDD6",
-  muted: "#8B93A1",
-  maroon: "#7A2E2E",
-  maroonDeep: "#3A2222",
-  hairline: "rgba(255,255,255,0.10)",
-  hairlineSoft: "rgba(255,255,255,0.06)",
-  fill: "rgba(255,255,255,0.06)",
+  page: "#0B1020",
+  shell: "#12224A",
+  shellBorder: "#05070D",
+  card: "#173063",
+  board: "#0E1B3D",
+  flap: "#0A1330",
+  amber: "#E23636",
+  amberStar: "#F0C808",
+  cream: "#F4F7FF",
+  creamDim: "#B9CBF0",
+  muted: "#7C93C4",
+  maroon: "#E23636",
+  maroonDeep: "#7A1515",
+  hairline: "rgba(90,150,255,0.20)",
+  hairlineSoft: "rgba(90,150,255,0.10)",
+  fill: "rgba(90,150,255,0.10)",
 };
 
 const PRICE_TIERS = [
@@ -157,7 +157,7 @@ function Flap({ char }) {
 function SpinningTicket({ card, tick }) {
   return (
     <div className="rounded-xl overflow-hidden shadow-lg relative" style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}` }}>
-      <div className="absolute top-0 left-0 right-0 h-2" style={{ background: "repeating-linear-gradient(90deg,#7A2E2E 0 8px,transparent 8px 16px)" }} />
+      <div className="absolute top-0 left-0 right-0 h-2" style={{ background: "repeating-linear-gradient(90deg,#E23636 0 8px,transparent 8px 16px)" }} />
       <div className="p-4 pt-5" style={{ perspective: "700px" }}>
         <p className="font-mono text-[10px] tracking-widest uppercase mb-2" style={{ color: C.amber }}>Drawing your ticket…</p>
         <div key={tick} style={{ animation: "cardflip 90ms ease-out" }} className="flex items-center gap-2">
@@ -649,7 +649,7 @@ export default function SoloRoulette({ onHome }) {
               onTouchMove={onPointerMove}
               onTouchEnd={onPointerUp}
             >
-              <div className="absolute top-0 left-0 right-0 h-2" style={{ background: "repeating-linear-gradient(90deg,#7A2E2E 0 8px,transparent 8px 16px)" }} />
+              <div className="absolute top-0 left-0 right-0 h-2" style={{ background: "repeating-linear-gradient(90deg,#E23636 0 8px,transparent 8px 16px)" }} />
               <div className="p-4 pt-5">
                 <div className="flex justify-between items-start">
                   <div className="flex items-start gap-2">
