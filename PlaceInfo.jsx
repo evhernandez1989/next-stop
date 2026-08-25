@@ -4,8 +4,8 @@ import { directionsUrl } from "./useRestaurants";
 
 const C = {
   shell: "#12224A", card: "#173063", board: "#0E1B3D", flap: "#0A1330",
-  amber: "#E23636", amberStar: "#F0C808", cream: "#F4F7FF", creamDim: "#B9CBF0",
-  muted: "#7C93C4", maroon: "#E23636",
+  amber: "#FFF04D", amberStar: "#F0C808", cream: "#F4F7FF", creamDim: "#B9CBF0",
+  muted: "#7C93C4", maroon: "#FFF04D",
   hairline: "rgba(90,150,255,0.20)", fill: "rgba(90,150,255,0.10)",
 };
 
@@ -143,7 +143,7 @@ export default function PlaceInfo({ place, onClose }) {
       {/* action buttons (always visible) */}
       <div className="px-5 py-4 grid grid-cols-2 gap-2" style={{ borderTop: `1px solid ${C.hairline}` }}>
         {website && (
-          <a href={website} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[13px] font-display font-semibold" style={{ backgroundColor: C.maroon, color: C.cream }}>
+          <a href={website} target="_blank" rel="noreferrer" className="flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-[13px] font-display font-semibold" style={{ backgroundColor: C.maroon, color: "#12285C" }}>
             <UtensilsCrossed size={14} /> Menu / Site
           </a>
         )}
