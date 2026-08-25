@@ -14,9 +14,9 @@ import PlaceInfo from "./PlaceInfo";
 
 const C = {
   page: "#0B1020", shell: "#12224A", shellBorder: "#05070D", card: "#173063",
-  board: "#0E1B3D", flap: "#0A1330", amber: "#E23636", amberStar: "#F0C808",
-  cream: "#F4F7FF", creamDim: "#B9CBF0", muted: "#7C93C4", maroon: "#E23636",
-  maroonDeep: "#7A1515", green: "#4FB477", hairline: "rgba(90,150,255,0.20)",
+  board: "#0E1B3D", flap: "#0A1330", amber: "#FFF04D", amberStar: "#F0C808",
+  cream: "#F4F7FF", creamDim: "#B9CBF0", muted: "#7C93C4", maroon: "#FFF04D",
+  maroonDeep: "#0E1B3D", green: "#4FB477", hairline: "rgba(90,150,255,0.20)",
   hairlineSoft: "rgba(90,150,255,0.10)", fill: "rgba(90,150,255,0.10)",
 };
 
@@ -83,7 +83,7 @@ function SpinTiles({ candidates }) {
         return (
           <div key={`${i}-${tick}`} className="rounded-xl overflow-hidden relative"
             style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}`, animation: "cardflip 100ms ease-out" }}>
-            <div className="absolute top-0 left-0 right-0 h-1.5" style={{ background: "repeating-linear-gradient(90deg,#E23636 0 8px,transparent 8px 16px)" }} />
+            <div className="absolute top-0 left-0 right-0 h-1.5" style={{ background: "repeating-linear-gradient(90deg,#2F6BFF 0 8px,transparent 8px 16px)" }} />
             <div className="px-3 py-3 pt-4 flex items-center gap-2">
               <CuisineIcon cuisine={c?.cuisine || "American"} size={16} style={{ color: C.amber }} />
               <span className="font-display font-bold text-[16px] truncate" style={{ color: C.cream, filter: "blur(1.5px)", opacity: 0.8 }}>
@@ -153,7 +153,7 @@ function HostFilters({
   filtersOpen, setFiltersOpen, cuisines, cuisineFilter, setCuisineFilter, priceFilter, setPriceFilter,
   maxDistance, setMaxDistance, tiers, setTiers, priceEdit, setPriceEdit, toggleSet, updateTier, count,
 }) {
-  const chipOn = { backgroundColor: C.maroon, border: `1px solid ${C.maroon}`, color: C.cream };
+  const chipOn = { backgroundColor: C.maroon, border: `1px solid ${C.maroon}`, color: "#12285C" };
   const chipOff = { backgroundColor: "transparent", border: `1px solid ${C.hairline}`, color: C.creamDim };
   const numStyle = { backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` };
   return (
@@ -389,7 +389,7 @@ export default function NextStopMultiplayer({ onHome }) {
               disabled={!name.trim() || r.busy}
               className="w-full flex items-center justify-between px-4 py-4 rounded-xl mt-4 mb-3 active:scale-[0.98] transition-transform"
               style={name.trim() && !r.busy
-                ? { backgroundColor: C.maroon, color: C.cream }
+                ? { backgroundColor: C.maroon, color: "#12285C" }
                 : { backgroundColor: "#C4C9D2", color: "#5B6272", border: "1px solid rgba(11,16,32,0.25)" }}>
               <span className="flex items-center gap-3">
                 <Users size={20} />
@@ -442,7 +442,7 @@ export default function NextStopMultiplayer({ onHome }) {
           <NameField name={name} setName={setName} />
           <button onClick={async () => { if (canJoin) await r.joinRoom(suffix, name.trim()); }} disabled={!canJoin}
             className="w-full flex items-center justify-center gap-2 font-display font-semibold tracking-wide py-3 rounded-lg text-sm mt-6 active:scale-[0.98] transition-transform"
-            style={canJoin ? { backgroundColor: C.maroon, color: C.cream } : { backgroundColor: "#3A3D42", color: "#7A7F87" }}>
+            style={canJoin ? { backgroundColor: C.maroon, color: "#12285C" } : { backgroundColor: "#3A3D42", color: "#7A7F87" }}>
             <UserPlus size={16} /> JOIN ROOM
           </button>
         </div>
@@ -499,12 +499,12 @@ export default function NextStopMultiplayer({ onHome }) {
                   <div className="mt-2 flex gap-1.5">
                     <button onClick={() => setOptimizeMode("middle")}
                       className="flex-1 text-[12px] font-display font-semibold py-2 rounded-lg transition-colors"
-                      style={optimizeMode === "middle" ? { backgroundColor: C.maroon, color: C.cream } : { backgroundColor: "transparent", color: C.creamDim, border: `1px solid ${C.hairline}` }}>
+                      style={optimizeMode === "middle" ? { backgroundColor: C.maroon, color: "#12285C" } : { backgroundColor: "transparent", color: C.creamDim, border: `1px solid ${C.hairline}` }}>
                       Meet in the middle
                     </button>
                     <button onClick={() => setOptimizeMode("farthest")}
                       className="flex-1 text-[12px] font-display font-semibold py-2 rounded-lg transition-colors"
-                      style={optimizeMode === "farthest" ? { backgroundColor: C.maroon, color: C.cream } : { backgroundColor: "transparent", color: C.creamDim, border: `1px solid ${C.hairline}` }}>
+                      style={optimizeMode === "farthest" ? { backgroundColor: C.maroon, color: "#12285C" } : { backgroundColor: "transparent", color: C.creamDim, border: `1px solid ${C.hairline}` }}>
                       Favor the farthest
                     </button>
                   </div>
@@ -526,7 +526,7 @@ export default function NextStopMultiplayer({ onHome }) {
                     className="flex-1 font-body text-[14px] px-3 py-2 rounded-lg outline-none"
                     style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }} />
                   <button onClick={() => { if (cityInput.trim()) { setCity(cityInput); setManualOverride(true); setShowCity(false); } }}
-                    className="px-3 py-2 rounded-lg font-display font-semibold text-[13px]" style={{ backgroundColor: C.maroon, color: C.cream }}>Go</button>
+                    className="px-3 py-2 rounded-lg font-display font-semibold text-[13px]" style={{ backgroundColor: C.maroon, color: "#12285C" }}>Go</button>
                 </div>
               )}
               {locError && <p className="text-[12px] font-body mt-1" style={{ color: "#FF9B9B" }}>{locError}</p>}
@@ -543,7 +543,7 @@ export default function NextStopMultiplayer({ onHome }) {
               <button onClick={() => hostPool.length && r.spin(hostPool)}
                 disabled={loading || hostPool.length === 0}
                 className="w-full flex items-center justify-center gap-2 font-display font-semibold tracking-wide py-3 rounded-lg text-sm active:scale-[0.98] transition-transform"
-                style={loading || hostPool.length === 0 ? { backgroundColor: "#3A3D42", color: "#7A7F87" } : { backgroundColor: C.maroon, color: C.cream }}>
+                style={loading || hostPool.length === 0 ? { backgroundColor: "#3A3D42", color: "#7A7F87" } : { backgroundColor: C.maroon, color: "#12285C" }}>
                 <RotateCw size={16} className={loading ? "animate-spin" : ""} /> {loading ? "LOADING…" : hostPool.length === 0 ? "NO MATCHES — ADJUST FILTERS" : "START SPINNING"}
               </button>
               <p className="text-center text-[11px] font-mono mt-2" style={{ color: C.muted }}>everyone votes on their own phone</p>
@@ -655,7 +655,7 @@ export default function NextStopMultiplayer({ onHome }) {
       </div>
       {w && (
         <div className="mx-5 mb-4 rounded-xl overflow-hidden shadow-lg relative" style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}` }}>
-          <div className="absolute top-0 left-0 right-0 h-2" style={{ background: "repeating-linear-gradient(90deg,#E23636 0 8px,transparent 8px 16px)" }} />
+          <div className="absolute top-0 left-0 right-0 h-2" style={{ background: "repeating-linear-gradient(90deg,#2F6BFF 0 8px,transparent 8px 16px)" }} />
           <div className="p-4 pt-5">
             <div className="flex items-start gap-2">
               <CuisineIcon cuisine={w.cuisine} size={18} style={{ color: C.amber, marginTop: 4 }} />
@@ -675,7 +675,7 @@ export default function NextStopMultiplayer({ onHome }) {
                 <Phone size={13} /> Call
               </a>
               <a href={directionsUrl(w.name, w.address)} target="_blank" rel="noreferrer"
-                className="flex-1 flex items-center justify-center gap-1.5 text-[13px] font-display font-medium py-2 rounded-md" style={{ backgroundColor: C.maroon, color: C.cream }}>
+                className="flex-1 flex items-center justify-center gap-1.5 text-[13px] font-display font-medium py-2 rounded-md" style={{ backgroundColor: C.maroon, color: "#12285C" }}>
                 <Navigation size={13} /> Directions
               </a>
             </div>
@@ -689,7 +689,7 @@ export default function NextStopMultiplayer({ onHome }) {
       )}
       {r.isHost && (
         <div className="px-5 pt-2 pb-6 space-y-2">
-          <button onClick={() => hostPool.length && r.spin(hostPool)} className="w-full flex items-center justify-center gap-2 font-display font-semibold py-3 rounded-lg text-sm active:scale-[0.98] transition-transform" style={{ backgroundColor: C.maroon, color: C.cream }}>
+          <button onClick={() => hostPool.length && r.spin(hostPool)} className="w-full flex items-center justify-center gap-2 font-display font-semibold py-3 rounded-lg text-sm active:scale-[0.98] transition-transform" style={{ backgroundColor: C.maroon, color: "#12285C" }}>
             <RotateCw size={15} /> SPIN AGAIN
           </button>
           <button onClick={r.resetToLobby} className="w-full flex items-center justify-center gap-2 font-display font-medium py-2.5 rounded-lg text-[14px]" style={{ backgroundColor: C.fill, color: C.creamDim, border: `1px solid ${C.hairline}` }}>
