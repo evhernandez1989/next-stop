@@ -1,6 +1,5 @@
 import { useState } from "react";
 import TipBar from "./TipBar";
-import InstallHint from "./InstallHint";
 import ReactDOM from "react-dom/client";
 import { Users, User, MapPin, ChevronRight, ChevronsRight, Dices } from "lucide-react";
 import SoloRoulette from "./SoloRoulette.jsx";
@@ -9,8 +8,8 @@ import "./index.css";
 
 const C = {
   page: "#0B1020", shell: "#12224A", shellBorder: "#05070D", card: "#173063",
-  amber: "#E23636", cream: "#F4F7FF", creamDim: "#B9CBF0", muted: "#7C93C4",
-  maroon: "#E23636", hairline: "rgba(90,150,255,0.20)", fill: "rgba(90,150,255,0.10)",
+  amber: "#FFF04D", cream: "#F4F7FF", creamDim: "#B9CBF0", muted: "#7C93C4",
+  maroon: "#FFF04D", hairline: "rgba(90,150,255,0.20)", fill: "rgba(90,150,255,0.10)",
 };
 
 function HomeScreen({ onSolo, onGroup }) {
@@ -26,7 +25,7 @@ function HomeScreen({ onSolo, onGroup }) {
         style={{ backgroundColor: C.shell, border: `6px solid ${C.shellBorder}`, minHeight: 640 }}>
         <div className="px-5 pt-10 pb-6 flex flex-col items-center text-center">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: C.maroon }}>
-            <Dices size={30} style={{ color: C.cream }} />
+            <Dices size={30} style={{ color: "#12285C" }} />
           </div>
           <h1 className="font-display text-4xl font-bold tracking-tight leading-none" style={{ color: C.cream }}>NEXT STOP</h1>
           <p className="font-mono text-[12px] mt-2 tracking-widest uppercase" style={{ color: C.amber }}>Restaurant Roulette</p>
@@ -62,7 +61,6 @@ function HomeScreen({ onSolo, onGroup }) {
             </p>
           </div>
 
-          <InstallHint />
           <TipBar />
         </div>
       </div>
