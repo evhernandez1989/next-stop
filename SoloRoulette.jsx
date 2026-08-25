@@ -159,7 +159,7 @@ function SpinningTicket({ card, tick }) {
     <div className="rounded-xl overflow-hidden shadow-lg relative" style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}` }}>
       <div className="absolute top-0 left-0 right-0 h-2" style={{ background: "repeating-linear-gradient(90deg,#E23636 0 8px,transparent 8px 16px)" }} />
       <div className="p-4 pt-5" style={{ perspective: "700px" }}>
-        <p className="font-mono text-[10px] tracking-widest uppercase mb-2" style={{ color: C.amber }}>Drawing your ticket…</p>
+        <p className="font-mono text-[11px] tracking-widest uppercase mb-2" style={{ color: C.amber }}>Drawing your ticket…</p>
         <div key={tick} style={{ animation: "cardflip 90ms ease-out" }} className="flex items-center gap-2">
           <CuisineIcon cuisine={card?.cuisine || "American"} size={18} className="shrink-0" style={{ color: C.amber }} />
           <h2 className="font-display text-xl font-bold leading-tight truncate" style={{ color: C.cream, filter: "blur(1.5px)", opacity: 0.8 }}>
@@ -176,7 +176,7 @@ function IdleTicket() {
   return (
     <div className="rounded-xl overflow-hidden relative" style={{ backgroundColor: C.board, border: `1px dashed ${C.hairline}` }}>
       <div className="px-4 py-8 text-center">
-        <p className="font-mono text-[11px] tracking-widest uppercase" style={{ color: C.muted }}>Ready when you are</p>
+        <p className="font-mono text-[12px] tracking-widest uppercase" style={{ color: C.muted }}>Ready when you are</p>
         <p className="font-display text-lg font-bold mt-1" style={{ color: C.creamDim }}>Tap spin to draw a spot</p>
       </div>
     </div>
@@ -204,15 +204,15 @@ function VoteCard({ r, votes, onVote }) {
       <div className="min-w-0">
         <div className="flex items-center gap-1.5">
           <CuisineIcon cuisine={r.cuisine} className="shrink-0" style={{ color: C.amber }} />
-          <p className="font-display font-semibold text-[13px] truncate" style={{ color: C.cream }}>{r.name}</p>
+          <p className="font-display font-semibold text-[14px] truncate" style={{ color: C.cream }}>{r.name}</p>
         </div>
-        <p className="text-[10px] font-mono mt-0.5" style={{ color: C.creamDim }}>
+        <p className="text-[11px] font-mono mt-0.5" style={{ color: C.creamDim }}>
           {r.priceRange} &middot; {r.distance.toFixed(1)} mi
         </p>
       </div>
       <button
         onClick={onVote}
-        className="flex items-center gap-1 text-[11px] font-display font-semibold px-2.5 py-1.5 rounded-md shrink-0 active:scale-95 transition-transform"
+        className="flex items-center gap-1 text-[12px] font-display font-semibold px-2.5 py-1.5 rounded-md shrink-0 active:scale-95 transition-transform"
         style={{ backgroundColor: C.maroon, color: C.cream }}
       >
         <ThumbsUp size={11} /> {votes}
@@ -412,7 +412,7 @@ export default function SoloRoulette({ onHome }) {
   const chipOff = { backgroundColor: "transparent", border: `1px solid ${C.hairline}`, color: C.creamDim };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center py-8 px-3" style={{ backgroundColor: C.page }}>
+    <div className="min-h-screen w-full flex items-center justify-center px-0 py-0 sm:px-3 sm:py-8" style={{ backgroundColor: C.page }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Mono:wght@500;700&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Oswald', sans-serif; }
@@ -421,7 +421,7 @@ export default function SoloRoulette({ onHome }) {
       `}</style>
 
       <div
-        className="relative w-full max-w-[400px] rounded-[2.2rem] shadow-2xl overflow-hidden font-body"
+        className="relative w-full max-w-none sm:max-w-[420px] rounded-none sm:rounded-[2.2rem] shadow-2xl overflow-hidden font-body"
         style={{ backgroundColor: C.shell, border: `6px solid ${C.shellBorder}` }}
       >
 
@@ -430,22 +430,22 @@ export default function SoloRoulette({ onHome }) {
           <div className="flex items-start justify-between">
             <div>
               <h1 className="font-display text-3xl font-bold tracking-tight leading-none" style={{ color: C.cream }}>NEXT STOP</h1>
-              <p className="font-mono text-[11px] mt-1 tracking-widest uppercase" style={{ color: C.amber }}>Restaurant Roulette</p>
+              <p className="font-mono text-[12px] mt-1 tracking-widest uppercase" style={{ color: C.amber }}>Restaurant Roulette</p>
             </div>
             <button
               onClick={onHome}
-              className="flex items-center gap-1.5 text-[12px] font-display font-semibold px-3.5 py-2 rounded-full"
+              className="flex items-center gap-1.5 text-[13px] font-display font-semibold px-3.5 py-2 rounded-full"
               style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}`, color: C.cream }}
             >
               <ArrowLeft size={14} /> Modes
             </button>
           </div>
           <div className="mt-2">
-            <p className="flex items-center gap-1 text-[12px]" style={{ color: C.muted }}>
+            <p className="flex items-center gap-1 text-[13px]" style={{ color: C.muted }}>
               <MapPin size={12} />
               {loading ? "Finding your location…" : (label || "Set a location")}
               {!loading && ` · ${pool.length} spots`}
-              <button onClick={() => setShowCity((s) => !s)} className="ml-1 font-mono text-[11px]" style={{ color: C.amber }}>change</button>
+              <button onClick={() => setShowCity((s) => !s)} className="ml-1 font-mono text-[12px]" style={{ color: C.amber }}>change</button>
             </p>
             {(showCity || needCity) && (
               <div className="mt-2 flex gap-2">
@@ -453,25 +453,25 @@ export default function SoloRoulette({ onHome }) {
                   value={cityInput}
                   onChange={(e) => setCityInput(e.target.value)}
                   placeholder="City or address"
-                  className="flex-1 font-body text-[13px] px-3 py-2 rounded-lg outline-none"
+                  className="flex-1 font-body text-[14px] px-3 py-2 rounded-lg outline-none"
                   style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }}
                 />
                 <button
                   onClick={() => { setCity(cityInput); setShowCity(false); }}
-                  className="px-3 py-2 rounded-lg font-display font-semibold text-[12px]"
+                  className="px-3 py-2 rounded-lg font-display font-semibold text-[13px]"
                   style={{ backgroundColor: C.maroon, color: C.cream }}
                 >Go</button>
                 <button
                   onClick={() => { useMyLocation(); setShowCity(false); }}
-                  className="px-3 py-2 rounded-lg font-display font-semibold text-[12px]"
+                  className="px-3 py-2 rounded-lg font-display font-semibold text-[13px]"
                   style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }}
                 >📍</button>
               </div>
             )}
             {needCity && !loading && (
-              <p className="text-[11px] font-body mt-1" style={{ color: C.creamDim }}>Location's off — type a city to search.</p>
+              <p className="text-[12px] font-body mt-1" style={{ color: C.creamDim }}>Location's off — type a city to search.</p>
             )}
-            {error && <p className="text-[11px] font-body mt-1" style={{ color: "#FF9B9B" }}>{error}</p>}
+            {error && <p className="text-[12px] font-body mt-1" style={{ color: "#FF9B9B" }}>{error}</p>}
           </div>
         </div>
 
@@ -479,7 +479,7 @@ export default function SoloRoulette({ onHome }) {
         <div className="px-5 py-3" style={{ borderBottom: `1px solid ${C.hairlineSoft}` }}>
           <button
             onClick={() => setFiltersOpen((o) => !o)}
-            className="w-full flex items-center justify-between text-[13px] font-display font-medium tracking-wide"
+            className="w-full flex items-center justify-between text-[14px] font-display font-medium tracking-wide"
             style={{ color: C.cream }}
           >
             <span>FILTERS</span>
@@ -490,9 +490,9 @@ export default function SoloRoulette({ onHome }) {
             <div className="mt-3 space-y-3">
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <p className="text-[11px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>Cuisine</p>
+                  <p className="text-[12px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>Cuisine</p>
                   {cuisineFilter.size > 0 && (
-                    <button onClick={() => setCuisineFilter(new Set())} className="text-[11px] font-mono" style={{ color: C.amber }}>All</button>
+                    <button onClick={() => setCuisineFilter(new Set())} className="text-[12px] font-mono" style={{ color: C.amber }}>All</button>
                   )}
                 </div>
                 <div className="flex flex-wrap gap-1.5">
@@ -500,7 +500,7 @@ export default function SoloRoulette({ onHome }) {
                     <button
                       key={c}
                       onClick={() => pickCuisine(c)}
-                      className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full font-body transition-colors"
+                      className="flex items-center gap-1 text-[12px] px-2.5 py-1 rounded-full font-body transition-colors"
                       style={(cuisineFilter.size === 0 || cuisineFilter.has(c)) ? { ...chipOn, fontWeight: 600 } : chipOff}
                     >
                       <CuisineIcon cuisine={c} size={11} />
@@ -512,10 +512,10 @@ export default function SoloRoulette({ onHome }) {
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <p className="text-[11px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>
+                  <p className="text-[12px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>
                     Price / person <span style={{ textTransform: "none", opacity: 0.8 }}>· tap any that apply</span>
                   </p>
-                  <button onClick={() => setPriceEdit((e) => !e)} className="text-[11px] font-mono" style={{ color: C.amber }}>
+                  <button onClick={() => setPriceEdit((e) => !e)} className="text-[12px] font-mono" style={{ color: C.amber }}>
                     {priceEdit ? "done" : "edit"}
                   </button>
                 </div>
@@ -524,44 +524,44 @@ export default function SoloRoulette({ onHome }) {
                     <button
                       key={t.id}
                       onClick={() => toggleSet(setPriceFilter, priceFilter, t.id)}
-                      className="text-left text-[11px] px-2.5 py-1.5 rounded-lg font-body transition-colors"
+                      className="text-left text-[12px] px-2.5 py-1.5 rounded-lg font-body transition-colors"
                       style={priceFilter.has(t.id) ? { ...chipOn, fontWeight: 600 } : chipOff}
                     >
                       <div className="font-display leading-tight">{t.label}</div>
-                      <div className="font-mono text-[10px] opacity-80 leading-tight">{fmtTier(t)}</div>
+                      <div className="font-mono text-[11px] opacity-80 leading-tight">{fmtTier(t)}</div>
                     </button>
                   ))}
                 </div>
 
                 {priceEdit && (
                   <div className="mt-2 space-y-2 rounded-lg p-2.5" style={{ backgroundColor: C.fill }}>
-                    <p className="text-[10px] font-body" style={{ color: C.muted }}>Set your own dollar ranges per person.</p>
+                    <p className="text-[11px] font-body" style={{ color: C.muted }}>Set your own dollar ranges per person.</p>
                     {tiers.map((t, i) => (
                       <div key={t.id} className="flex items-center gap-2">
-                        <span className="w-16 text-[11px] font-display shrink-0" style={{ color: C.cream }}>{t.label}</span>
-                        <span className="text-[11px] font-mono" style={{ color: C.muted }}>$</span>
+                        <span className="w-16 text-[12px] font-display shrink-0" style={{ color: C.cream }}>{t.label}</span>
+                        <span className="text-[12px] font-mono" style={{ color: C.muted }}>$</span>
                         <input
                           type="number" inputMode="numeric" min="0" value={t.min}
                           onChange={(e) => updateTier(i, "min", e.target.value)}
-                          className="w-14 text-right font-mono text-[12px] px-2 py-1 rounded-md outline-none"
+                          className="w-14 text-right font-mono text-[13px] px-2 py-1 rounded-md outline-none"
                           style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }}
                         />
                         {t.max >= 9999 ? (
-                          <span className="text-[11px] font-mono" style={{ color: C.muted }}>and up</span>
+                          <span className="text-[12px] font-mono" style={{ color: C.muted }}>and up</span>
                         ) : (
                           <>
-                            <span className="text-[11px] font-mono" style={{ color: C.muted }}>to $</span>
+                            <span className="text-[12px] font-mono" style={{ color: C.muted }}>to $</span>
                             <input
                               type="number" inputMode="numeric" min="0" value={t.max}
                               onChange={(e) => updateTier(i, "max", e.target.value)}
-                              className="w-14 text-right font-mono text-[12px] px-2 py-1 rounded-md outline-none"
+                              className="w-14 text-right font-mono text-[13px] px-2 py-1 rounded-md outline-none"
                               style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }}
                             />
                           </>
                         )}
                       </div>
                     ))}
-                    <button onClick={() => setTiers(DEFAULT_TIERS)} className="text-[10px] font-mono underline" style={{ color: C.muted }}>
+                    <button onClick={() => setTiers(DEFAULT_TIERS)} className="text-[11px] font-mono underline" style={{ color: C.muted }}>
                       reset to defaults
                     </button>
                   </div>
@@ -570,7 +570,7 @@ export default function SoloRoulette({ onHome }) {
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <p className="text-[11px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>Max distance</p>
+                  <p className="text-[12px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>Max distance</p>
                   <div className="flex items-center gap-1">
                     <input
                       type="number" inputMode="numeric" min="1" max="50" value={maxDistance}
@@ -579,10 +579,10 @@ export default function SoloRoulette({ onHome }) {
                         if (raw === "") { setMaxDistance(1); return; }
                         setMaxDistance(Math.min(50, Math.max(1, Number(raw) || 1)));
                       }}
-                      className="w-14 text-right font-mono text-[12px] px-2 py-1 rounded-md outline-none"
+                      className="w-14 text-right font-mono text-[13px] px-2 py-1 rounded-md outline-none"
                       style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }}
                     />
-                    <span className="text-[11px] font-mono" style={{ color: C.muted }}>mi</span>
+                    <span className="text-[12px] font-mono" style={{ color: C.muted }}>mi</span>
                   </div>
                 </div>
                 <input
@@ -597,7 +597,7 @@ export default function SoloRoulette({ onHome }) {
                 <div className="pt-1">
                   <button
                     onClick={() => setHiddenOpen((o) => !o)}
-                    className="flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-wide"
+                    className="flex items-center gap-1.5 text-[12px] font-mono uppercase tracking-wide"
                     style={{ color: C.muted }}
                   >
                     <EyeOff size={12} /> Hidden spots
@@ -610,8 +610,8 @@ export default function SoloRoulette({ onHome }) {
                     <div className="mt-2 space-y-1">
                       {[...permaBlock].map((name) => (
                         <div key={name} className="flex items-center justify-between rounded px-2 py-1" style={{ backgroundColor: C.fill }}>
-                          <span className="text-[11px] font-body truncate" style={{ color: C.creamDim }}>{name}</span>
-                          <button onClick={() => unhide(name)} className="flex items-center gap-1 text-[10px] font-mono shrink-0" style={{ color: C.amber }}>
+                          <span className="text-[12px] font-body truncate" style={{ color: C.creamDim }}>{name}</span>
+                          <button onClick={() => unhide(name)} className="flex items-center gap-1 text-[11px] font-mono shrink-0" style={{ color: C.amber }}>
                             <Undo2 size={11} /> unhide
                           </button>
                         </div>
@@ -619,7 +619,7 @@ export default function SoloRoulette({ onHome }) {
                       {sessionBlock.size > 0 && (
                         <button
                           onClick={() => setSessionBlock(new Set())}
-                          className="text-[10px] font-mono underline mt-1"
+                          className="text-[11px] font-mono underline mt-1"
                           style={{ color: C.muted }}
                         >
                           clear this meal's skips
@@ -655,14 +655,14 @@ export default function SoloRoulette({ onHome }) {
                   <div className="flex items-start gap-2">
                     <CuisineIcon cuisine={result.cuisine} size={18} className="mt-1 shrink-0" style={{ color: C.amber }} />
                     <div>
-                      <p className="font-mono text-[10px] tracking-widest uppercase" style={{ color: C.amber }}>Your Ticket</p>
+                      <p className="font-mono text-[11px] tracking-widest uppercase" style={{ color: C.amber }}>Your Ticket</p>
                       <h2 className="font-display text-xl font-bold leading-tight mt-0.5" style={{ color: C.cream }}>{result.name}</h2>
                     </div>
                   </div>
                   <button onClick={() => setResult(null)} style={{ color: C.creamDim }}><X size={16} /></button>
                 </div>
 
-                <div className="flex items-center gap-3 mt-2 text-[12px] font-body" style={{ color: C.creamDim }}>
+                <div className="flex items-center gap-3 mt-2 text-[13px] font-body" style={{ color: C.creamDim }}>
                   <span className="flex items-center gap-1">
                     <Star size={12} style={{ fill: C.amberStar, color: C.amberStar }} />
                     {result.rating} ({result.ratingCount})
@@ -671,29 +671,29 @@ export default function SoloRoulette({ onHome }) {
                   <span>{result.distance.toFixed(1)} mi</span>
                 </div>
 
-                <p className="text-[12px] mt-1.5" style={{ color: C.creamDim }}>{result.address}</p>
+                <p className="text-[13px] mt-1.5" style={{ color: C.creamDim }}>{result.address}</p>
 
                 <div className="flex gap-2 mt-3">
                   <a href={`tel:${result.phone}`} onClick={chooseThisPlace}
-                    className="flex-1 flex items-center justify-center gap-1.5 text-[12px] font-display font-medium py-2 rounded-md"
+                    className="flex-1 flex items-center justify-center gap-1.5 text-[13px] font-display font-medium py-2 rounded-md"
                     style={{ backgroundColor: C.flap, color: C.cream }}>
                     <Phone size={13} /> Call
                   </a>
                   <a
                     href={directionsUrl(result.name, result.address)}
                     target="_blank" rel="noreferrer" onClick={chooseThisPlace}
-                    className="flex-1 flex items-center justify-center gap-1.5 text-[12px] font-display font-medium py-2 rounded-md"
+                    className="flex-1 flex items-center justify-center gap-1.5 text-[13px] font-display font-medium py-2 rounded-md"
                     style={{ backgroundColor: C.maroon, color: C.cream }}>
                     <Navigation size={13} /> Directions
                   </a>
                   <button onClick={reroll}
-                    className="flex items-center justify-center gap-1 text-[12px] font-display font-medium py-2 px-3 rounded-md"
+                    className="flex items-center justify-center gap-1 text-[13px] font-display font-medium py-2 px-3 rounded-md"
                     style={{ backgroundColor: C.fill, color: C.cream, border: `1px solid ${C.hairline}` }}>
                     <SkipForward size={13} />
                   </button>
                 </div>
                 <button onClick={() => setInfoPlace(result)}
-                  className="w-full mt-2 flex items-center justify-center gap-1.5 text-[12px] font-display font-medium py-2 rounded-md"
+                  className="w-full mt-2 flex items-center justify-center gap-1.5 text-[13px] font-display font-medium py-2 rounded-md"
                   style={{ backgroundColor: C.fill, color: C.cream, border: `1px solid ${C.hairline}` }}>
                   <Info size={13} /> More info about this spot
                 </button>
@@ -718,7 +718,7 @@ export default function SoloRoulette({ onHome }) {
             {loading ? "LOADING…" : pool.length === 0 ? "NO MATCHES \u2014 ADJUST FILTERS" : spinning ? "SPINNING..." : "SPIN"}
           </button>
           {!groupMode && (
-            <p className="text-center text-[10px] font-mono mt-2" style={{ color: "#6B7280" }}>
+            <p className="text-center text-[11px] font-mono mt-2" style={{ color: "#6B7280" }}>
               swipe ticket left to skip once &middot; tap skip for more options
             </p>
           )}
@@ -727,7 +727,7 @@ export default function SoloRoulette({ onHome }) {
         {/* Group candidates */}
         {candidates.length > 0 && (
           <div className="mx-5 mb-4 space-y-2">
-            <p className="text-[10px] font-mono uppercase tracking-widest" style={{ color: C.muted }}>Everyone taps their pick</p>
+            <p className="text-[11px] font-mono uppercase tracking-widest" style={{ color: C.muted }}>Everyone taps their pick</p>
             {candidates.map((c) => (
               <VoteCard key={c.name} r={c} votes={votes[c.name] || 0}
                 onVote={() => setVotes((v) => ({ ...v, [c.name]: (v[c.name] || 0) + 1 }))} />
@@ -747,10 +747,10 @@ export default function SoloRoulette({ onHome }) {
         {/* History */}
         {history.length > 1 && (
           <div className="px-5 pb-6">
-            <p className="text-[10px] font-mono uppercase tracking-widest mb-1.5" style={{ color: C.muted }}>Previously drawn</p>
+            <p className="text-[11px] font-mono uppercase tracking-widest mb-1.5" style={{ color: C.muted }}>Previously drawn</p>
             <div className="flex flex-wrap gap-1.5">
               {history.slice(1).map((h, i) => (
-                <span key={i} className="flex items-center gap-1 text-[10px] px-2 py-1 rounded font-mono" style={{ backgroundColor: C.fill, color: C.creamDim }}>
+                <span key={i} className="flex items-center gap-1 text-[11px] px-2 py-1 rounded font-mono" style={{ backgroundColor: C.fill, color: C.creamDim }}>
                   <CuisineIcon cuisine={h.cuisine} size={10} />
                   {h.name}
                 </span>
@@ -771,34 +771,34 @@ export default function SoloRoulette({ onHome }) {
               onClick={(e) => e.stopPropagation()}
             >
               <div className="w-10 h-1 rounded-full mx-auto mb-3" style={{ backgroundColor: "rgba(255,255,255,0.20)" }} />
-              <p className="text-[13px] font-display font-semibold mb-0.5" style={{ color: C.cream }}>Skip {result.name}?</p>
-              <p className="text-[11px] font-body mb-3" style={{ color: C.creamDim }}>Choose how long to hide it.</p>
+              <p className="text-[14px] font-display font-semibold mb-0.5" style={{ color: C.cream }}>Skip {result.name}?</p>
+              <p className="text-[12px] font-body mb-3" style={{ color: C.creamDim }}>Choose how long to hide it.</p>
 
               <button onClick={skipOnce}
                 className="w-full text-left px-3 py-2.5 rounded-lg mb-2"
                 style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}` }}>
-                <div className="flex items-center gap-2 text-[13px] font-display font-medium" style={{ color: C.cream }}>
+                <div className="flex items-center gap-2 text-[14px] font-display font-medium" style={{ color: C.cream }}>
                   <SkipForward size={14} /> Not this time
                 </div>
-                <p className="text-[11px] font-body ml-6" style={{ color: C.creamDim }}>Just reroll — it can come back on the next spin.</p>
+                <p className="text-[12px] font-body ml-6" style={{ color: C.creamDim }}>Just reroll — it can come back on the next spin.</p>
               </button>
 
               <button onClick={() => skipAndExclude("meal")}
                 className="w-full text-left px-3 py-2.5 rounded-lg mb-2"
                 style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}` }}>
-                <div className="flex items-center gap-2 text-[13px] font-display font-medium" style={{ color: C.cream }}>
+                <div className="flex items-center gap-2 text-[14px] font-display font-medium" style={{ color: C.cream }}>
                   <Undo2 size={14} /> Skip for this meal
                 </div>
-                <p className="text-[11px] font-body ml-6" style={{ color: C.creamDim }}>Hide until you pick a place, then it resets.</p>
+                <p className="text-[12px] font-body ml-6" style={{ color: C.creamDim }}>Hide until you pick a place, then it resets.</p>
               </button>
 
               <button onClick={() => skipAndExclude("forever")}
                 className="w-full text-left px-3 py-2.5 rounded-lg"
                 style={{ backgroundColor: C.maroonDeep, border: `1px solid ${C.maroon}` }}>
-                <div className="flex items-center gap-2 text-[13px] font-display font-medium" style={{ color: C.amber }}>
+                <div className="flex items-center gap-2 text-[14px] font-display font-medium" style={{ color: C.amber }}>
                   <EyeOff size={14} /> Never show again
                 </div>
-                <p className="text-[11px] font-body ml-6" style={{ color: "#E8D5D5" }}>Hide for good. Undo anytime under Hidden spots.</p>
+                <p className="text-[12px] font-body ml-6" style={{ color: "#E8D5D5" }}>Hide for good. Undo anytime under Hidden spots.</p>
               </button>
             </div>
           </div>
