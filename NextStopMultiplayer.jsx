@@ -86,7 +86,7 @@ function SpinTiles({ candidates }) {
             <div className="absolute top-0 left-0 right-0 h-1.5" style={{ background: "repeating-linear-gradient(90deg,#E23636 0 8px,transparent 8px 16px)" }} />
             <div className="px-3 py-3 pt-4 flex items-center gap-2">
               <CuisineIcon cuisine={c?.cuisine || "American"} size={16} style={{ color: C.amber }} />
-              <span className="font-display font-bold text-[15px] truncate" style={{ color: C.cream, filter: "blur(1.5px)", opacity: 0.8 }}>
+              <span className="font-display font-bold text-[16px] truncate" style={{ color: C.cream, filter: "blur(1.5px)", opacity: 0.8 }}>
                 {c?.name || "\u2026"}
               </span>
             </div>
@@ -99,14 +99,14 @@ function SpinTiles({ candidates }) {
 
 function Frame({ children }) {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center py-8 px-3" style={{ backgroundColor: C.page }}>
+    <div className="min-h-screen w-full flex items-center justify-center px-0 py-0 sm:px-3 sm:py-8" style={{ backgroundColor: C.page }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Mono:wght@500;700&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Oswald', sans-serif; }
         .font-mono { font-family: 'Roboto Mono', monospace; }
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
-      <div className="relative w-full max-w-[400px] rounded-[2.2rem] shadow-2xl overflow-hidden font-body"
+      <div className="relative w-full max-w-none sm:max-w-[420px] rounded-none sm:rounded-[2.2rem] shadow-2xl overflow-hidden font-body"
         style={{ backgroundColor: C.shell, border: `6px solid ${C.shellBorder}`, minHeight: 640 }}>
         {children}
         <TipBar />
@@ -120,7 +120,7 @@ function Avatar({ name, host }) {
   return (
     <div className="flex items-center gap-2.5">
       <div className="relative">
-        <div className="w-9 h-9 rounded-full flex items-center justify-center font-display font-semibold text-[13px]"
+        <div className="w-9 h-9 rounded-full flex items-center justify-center font-display font-semibold text-[14px]"
           style={{ backgroundColor: color, color: C.cream }}>{initials(name)}</div>
         {host && (
           <div className="absolute -top-1 -right-1 rounded-full p-0.5" style={{ backgroundColor: C.shell }}>
@@ -129,8 +129,8 @@ function Avatar({ name, host }) {
         )}
       </div>
       <div>
-        <p className="text-[13px] font-body font-medium leading-tight" style={{ color: C.cream }}>{name}</p>
-        <p className="text-[10px] font-mono leading-tight" style={{ color: host ? C.amber : C.muted }}>{host ? "host" : "ready"}</p>
+        <p className="text-[14px] font-body font-medium leading-tight" style={{ color: C.cream }}>{name}</p>
+        <p className="text-[11px] font-mono leading-tight" style={{ color: host ? C.amber : C.muted }}>{host ? "host" : "ready"}</p>
       </div>
     </div>
   );
@@ -139,7 +139,7 @@ function Avatar({ name, host }) {
 function Roster({ players, count }) {
   return (
     <div className="px-5 pt-4 pb-2">
-      <p className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wide mb-2" style={{ color: C.muted }}>
+      <p className="flex items-center justify-between text-[12px] font-mono uppercase tracking-wide mb-2" style={{ color: C.muted }}>
         <span>In the room</span><span style={{ color: C.amber }}>{count} joined</span>
       </p>
       <div className="space-y-2.5 rounded-xl p-3" style={{ backgroundColor: C.fill }}>
@@ -158,24 +158,24 @@ function HostFilters({
   const numStyle = { backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` };
   return (
     <div className="px-5 py-3" style={{ borderTop: `1px solid ${C.hairlineSoft}` }}>
-      <button onClick={() => setFiltersOpen((o) => !o)} className="w-full flex items-center justify-between text-[13px] font-display font-medium tracking-wide" style={{ color: C.cream }}>
-        <span>FILTERS <span className="font-mono text-[11px]" style={{ color: C.muted }}>· {count} in range</span></span>
+      <button onClick={() => setFiltersOpen((o) => !o)} className="w-full flex items-center justify-between text-[14px] font-display font-medium tracking-wide" style={{ color: C.cream }}>
+        <span>FILTERS <span className="font-mono text-[12px]" style={{ color: C.muted }}>· {count} in range</span></span>
         <ChevronDown size={16} className={`transition-transform ${filtersOpen ? "rotate-180" : ""}`} />
       </button>
       {filtersOpen && (
         <div className="mt-3 space-y-3">
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-[11px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>Cuisine</p>
+              <p className="text-[12px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>Cuisine</p>
               {cuisineFilter.size > 0 && (
-                <button onClick={() => setCuisineFilter(new Set())} className="text-[11px] font-mono" style={{ color: C.amber }}>All</button>
+                <button onClick={() => setCuisineFilter(new Set())} className="text-[12px] font-mono" style={{ color: C.amber }}>All</button>
               )}
             </div>
             <div className="flex flex-wrap gap-1.5">
               {cuisines.map((c) => (
                 <button key={c}
                   onClick={() => setCuisineFilter((prev) => { if (prev.size === 0) return new Set([c]); const n = new Set(prev); n.has(c) ? n.delete(c) : n.add(c); return n; })}
-                  className="flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-full font-body transition-colors"
+                  className="flex items-center gap-1 text-[12px] px-2.5 py-1 rounded-full font-body transition-colors"
                   style={(cuisineFilter.size === 0 || cuisineFilter.has(c)) ? { ...chipOn, fontWeight: 600 } : chipOff}>
                   <CuisineIcon cuisine={c} size={11} />{c}
                 </button>
@@ -184,55 +184,55 @@ function HostFilters({
           </div>
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-[11px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>
+              <p className="text-[12px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>
                 Price / person <span style={{ textTransform: "none", opacity: 0.8 }}>· tap any that apply</span>
               </p>
-              <button onClick={() => setPriceEdit((e) => !e)} className="text-[11px] font-mono" style={{ color: C.amber }}>{priceEdit ? "done" : "edit"}</button>
+              <button onClick={() => setPriceEdit((e) => !e)} className="text-[12px] font-mono" style={{ color: C.amber }}>{priceEdit ? "done" : "edit"}</button>
             </div>
             <div className="flex gap-1.5">
               {tiers.map((t) => (
                 <button key={t.id} onClick={() => toggleSet(setPriceFilter, priceFilter, t.id)}
-                  className="text-left text-[11px] px-2.5 py-1.5 rounded-lg font-body transition-colors"
+                  className="text-left text-[12px] px-2.5 py-1.5 rounded-lg font-body transition-colors"
                   style={priceFilter.has(t.id) ? { ...chipOn, fontWeight: 600 } : chipOff}>
                   <div className="font-display leading-tight">{t.label}</div>
-                  <div className="font-mono text-[10px] opacity-80 leading-tight">{fmtTier(t)}</div>
+                  <div className="font-mono text-[11px] opacity-80 leading-tight">{fmtTier(t)}</div>
                 </button>
               ))}
             </div>
             {priceEdit && (
               <div className="mt-2 space-y-2 rounded-lg p-2.5" style={{ backgroundColor: C.fill }}>
-                <p className="text-[10px] font-body" style={{ color: C.muted }}>Set your own dollar ranges per person.</p>
+                <p className="text-[11px] font-body" style={{ color: C.muted }}>Set your own dollar ranges per person.</p>
                 {tiers.map((t, i) => (
                   <div key={t.id} className="flex items-center gap-2">
-                    <span className="w-16 text-[11px] font-display shrink-0" style={{ color: C.cream }}>{t.label}</span>
-                    <span className="text-[11px] font-mono" style={{ color: C.muted }}>$</span>
+                    <span className="w-16 text-[12px] font-display shrink-0" style={{ color: C.cream }}>{t.label}</span>
+                    <span className="text-[12px] font-mono" style={{ color: C.muted }}>$</span>
                     <input type="number" inputMode="numeric" min="0" value={t.min}
                       onChange={(e) => updateTier(i, "min", e.target.value)}
-                      className="w-14 text-right font-mono text-[12px] px-2 py-1 rounded-md outline-none" style={numStyle} />
+                      className="w-14 text-right font-mono text-[13px] px-2 py-1 rounded-md outline-none" style={numStyle} />
                     {t.max >= 9999 ? (
-                      <span className="text-[11px] font-mono" style={{ color: C.muted }}>and up</span>
+                      <span className="text-[12px] font-mono" style={{ color: C.muted }}>and up</span>
                     ) : (
                       <>
-                        <span className="text-[11px] font-mono" style={{ color: C.muted }}>to $</span>
+                        <span className="text-[12px] font-mono" style={{ color: C.muted }}>to $</span>
                         <input type="number" inputMode="numeric" min="0" value={t.max}
                           onChange={(e) => updateTier(i, "max", e.target.value)}
-                          className="w-14 text-right font-mono text-[12px] px-2 py-1 rounded-md outline-none" style={numStyle} />
+                          className="w-14 text-right font-mono text-[13px] px-2 py-1 rounded-md outline-none" style={numStyle} />
                       </>
                     )}
                   </div>
                 ))}
-                <button onClick={() => setTiers(DEFAULT_TIERS)} className="text-[10px] font-mono underline" style={{ color: C.muted }}>reset to defaults</button>
+                <button onClick={() => setTiers(DEFAULT_TIERS)} className="text-[11px] font-mono underline" style={{ color: C.muted }}>reset to defaults</button>
               </div>
             )}
           </div>
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <p className="text-[11px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>Max distance</p>
+              <p className="text-[12px] font-mono uppercase tracking-wide" style={{ color: C.muted }}>Max distance</p>
               <div className="flex items-center gap-1">
                 <input type="number" inputMode="numeric" min="1" max="50" value={maxDistance}
                   onChange={(e) => { const raw = e.target.value; if (raw === "") { setMaxDistance(1); return; } setMaxDistance(Math.min(50, Math.max(1, Number(raw) || 1))); }}
-                  className="w-14 text-right font-mono text-[12px] px-2 py-1 rounded-md outline-none" style={numStyle} />
-                <span className="text-[11px] font-mono" style={{ color: C.muted }}>mi</span>
+                  className="w-14 text-right font-mono text-[13px] px-2 py-1 rounded-md outline-none" style={numStyle} />
+                <span className="text-[12px] font-mono" style={{ color: C.muted }}>mi</span>
               </div>
             </div>
             <input type="range" min="1" max="50" value={maxDistance}
@@ -372,17 +372,17 @@ export default function NextStopMultiplayer({ onHome }) {
       return (
         <Frame>
           <div className="px-5 pt-2 pb-4" style={{ borderBottom: `1px solid ${C.hairlineSoft}` }}>
-            <button onClick={onHome} className="flex items-center gap-1.5 text-[12px] font-display font-semibold px-3.5 py-2 rounded-full mb-2" style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}`, color: C.cream }}>
+            <button onClick={onHome} className="flex items-center gap-1.5 text-[13px] font-display font-semibold px-3.5 py-2 rounded-full mb-2" style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}`, color: C.cream }}>
               <ArrowLeft size={14} /> Modes
             </button>
             <h1 className="font-display text-3xl font-bold tracking-tight leading-none" style={{ color: C.cream }}>NEXT STOP</h1>
-            <p className="font-mono text-[11px] mt-1 tracking-widest uppercase" style={{ color: C.amber }}>Group Roulette</p>
+            <p className="font-mono text-[12px] mt-1 tracking-widest uppercase" style={{ color: C.amber }}>Group Roulette</p>
           </div>
           <div className="px-5 pt-6 pb-4">
-            <p className="flex items-center gap-1 text-[12px] mb-6" style={{ color: C.muted }}>
+            <p className="flex items-center gap-1 text-[13px] mb-6" style={{ color: C.muted }}>
               <MapPin size={12} /> Restaurants near you &middot; set the spot after you start
             </p>
-            {r.error && <p className="text-[12px] mb-3" style={{ color: "#FF9B9B" }}>{r.error}</p>}
+            {r.error && <p className="text-[13px] mb-3" style={{ color: "#FF9B9B" }}>{r.error}</p>}
             <NameField name={name} setName={setName} />
             <button
               onClick={async () => { if (name.trim()) await r.createRoom(name.trim()); }}
@@ -394,8 +394,8 @@ export default function NextStopMultiplayer({ onHome }) {
               <span className="flex items-center gap-3">
                 <Users size={20} />
                 <span className="text-left">
-                  <span className="block font-display font-semibold text-[15px] leading-tight">Start a group session</span>
-                  <span className="block text-[11px] font-body leading-tight" style={{ color: name.trim() && !r.busy ? "#E8D5D5" : "#6B7280" }}>
+                  <span className="block font-display font-semibold text-[16px] leading-tight">Start a group session</span>
+                  <span className="block text-[12px] font-body leading-tight" style={{ color: name.trim() && !r.busy ? "#E8D5D5" : "#6B7280" }}>
                     {r.busy ? "Starting…" : name.trim() ? "Host a room, share the link" : "Enter your name above to start"}
                   </span>
                 </span>
@@ -408,8 +408,8 @@ export default function NextStopMultiplayer({ onHome }) {
               <span className="flex items-center gap-3">
                 <UserPlus size={20} style={{ color: C.amber }} />
                 <span className="text-left">
-                  <span className="block font-display font-semibold text-[15px] leading-tight">Join with a code</span>
-                  <span className="block text-[11px] font-body leading-tight" style={{ color: C.creamDim }}>Someone sent you a room code</span>
+                  <span className="block font-display font-semibold text-[16px] leading-tight">Join with a code</span>
+                  <span className="block text-[12px] font-body leading-tight" style={{ color: C.creamDim }}>Someone sent you a room code</span>
                 </span>
               </span>
               <ChevronRight size={18} style={{ color: C.muted }} />
@@ -425,14 +425,14 @@ export default function NextStopMultiplayer({ onHome }) {
       <Frame>
         <div className="px-5 pt-2 pb-4" style={{ borderBottom: `1px solid ${C.hairlineSoft}` }}>
           <h1 className="font-display text-3xl font-bold tracking-tight leading-none" style={{ color: C.cream }}>NEXT STOP</h1>
-          <p className="font-mono text-[11px] mt-1 tracking-widest uppercase" style={{ color: C.amber }}>Join a Room</p>
+          <p className="font-mono text-[12px] mt-1 tracking-widest uppercase" style={{ color: C.amber }}>Join a Room</p>
         </div>
         <div className="px-5 pt-6 pb-4">
-          <button onClick={() => setScreen("entry")} className="flex items-center gap-1.5 text-[12px] font-display font-semibold px-3.5 py-2 rounded-full mb-5" style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}`, color: C.cream }}>
+          <button onClick={() => setScreen("entry")} className="flex items-center gap-1.5 text-[13px] font-display font-semibold px-3.5 py-2 rounded-full mb-5" style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}`, color: C.cream }}>
             <ArrowLeft size={14} /> Back
           </button>
-          {r.error && <p className="text-[12px] mb-3" style={{ color: "#FF9B9B" }}>{r.error}</p>}
-          <p className="text-[11px] font-mono uppercase tracking-wide mb-2" style={{ color: C.muted }}>Room code</p>
+          {r.error && <p className="text-[13px] mb-3" style={{ color: "#FF9B9B" }}>{r.error}</p>}
+          <p className="text-[12px] font-mono uppercase tracking-wide mb-2" style={{ color: C.muted }}>Room code</p>
           <div className="flex items-center gap-2 mb-5">
             <span className="font-display text-2xl font-bold tracking-widest" style={{ color: C.muted }}>NEXT-</span>
             <input value={suffix} onChange={(e) => setJoinInput(e.target.value)} placeholder="7Q2X"
@@ -456,14 +456,14 @@ export default function NextStopMultiplayer({ onHome }) {
 
   const RoomHeader = ({ label, connected }) => (
     <div className="px-5 pt-3 pb-3" style={{ borderBottom: `1px solid ${C.hairlineSoft}` }}>
-      <button onClick={r.leaveRoom} className="flex items-center gap-1.5 text-[12px] font-display font-semibold px-3.5 py-2 rounded-full mb-2" style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}`, color: C.cream }}>
+      <button onClick={r.leaveRoom} className="flex items-center gap-1.5 text-[13px] font-display font-semibold px-3.5 py-2 rounded-full mb-2" style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}`, color: C.cream }}>
         <ArrowLeft size={14} /> Leave
       </button>
       <div className="flex items-center gap-2">
-        <span className="flex items-center gap-1 text-[10px] font-mono px-2 py-0.5 rounded-full" style={{ backgroundColor: C.fill, color: C.green }}>
+        <span className="flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-full" style={{ backgroundColor: C.fill, color: C.green }}>
           <Wifi size={10} /> {connected}
         </span>
-        <p className="font-mono text-[11px] tracking-widest uppercase" style={{ color: C.amber }}>{label}</p>
+        <p className="font-mono text-[12px] tracking-widest uppercase" style={{ color: C.amber }}>{label}</p>
       </div>
     </div>
   );
@@ -480,42 +480,42 @@ export default function NextStopMultiplayer({ onHome }) {
               </div>
               <span className="mt-3 font-display text-2xl font-bold tracking-[0.15em]" style={{ color: C.cream }}>{r.code}</span>
               <button onClick={copyLink}
-                className="mt-2 flex items-center gap-1.5 text-[12px] font-mono px-3 py-1.5 rounded-full active:scale-95 transition-transform"
+                className="mt-2 flex items-center gap-1.5 text-[13px] font-mono px-3 py-1.5 rounded-full active:scale-95 transition-transform"
                 style={{ backgroundColor: C.fill, color: copied ? C.green : C.creamDim, border: `1px solid ${C.hairline}` }}>
                 {copied ? <Check size={13} /> : <Copy size={13} />}{copied ? "Link copied" : "Copy invite link"}
               </button>
             </div>
             <Roster players={r.players} count={playerCount} />
             <div className="px-5 pt-3">
-              <p className="flex items-center gap-1 text-[12px]" style={{ color: C.muted }}>
+              <p className="flex items-center gap-1 text-[13px]" style={{ color: C.muted }}>
                 <MapPin size={12} />
                 {loading ? "Finding the group's spot…" : manualOverride ? (label || "Set area") : `${partyPoints.length} sharing location`}
                 {` · ${hostPool.length} spots`}
-                <button onClick={() => setShowCity((s) => !s)} className="ml-1 font-mono text-[11px]" style={{ color: C.amber }}>change</button>
+                <button onClick={() => setShowCity((s) => !s)} className="ml-1 font-mono text-[12px]" style={{ color: C.amber }}>change</button>
               </p>
 
               {!manualOverride && (
                 <>
                   <div className="mt-2 flex gap-1.5">
                     <button onClick={() => setOptimizeMode("middle")}
-                      className="flex-1 text-[11px] font-display font-semibold py-2 rounded-lg transition-colors"
+                      className="flex-1 text-[12px] font-display font-semibold py-2 rounded-lg transition-colors"
                       style={optimizeMode === "middle" ? { backgroundColor: C.maroon, color: C.cream } : { backgroundColor: "transparent", color: C.creamDim, border: `1px solid ${C.hairline}` }}>
                       Meet in the middle
                     </button>
                     <button onClick={() => setOptimizeMode("farthest")}
-                      className="flex-1 text-[11px] font-display font-semibold py-2 rounded-lg transition-colors"
+                      className="flex-1 text-[12px] font-display font-semibold py-2 rounded-lg transition-colors"
                       style={optimizeMode === "farthest" ? { backgroundColor: C.maroon, color: C.cream } : { backgroundColor: "transparent", color: C.creamDim, border: `1px solid ${C.hairline}` }}>
                       Favor the farthest
                     </button>
                   </div>
-                  <p className="text-[10px] font-body mt-1" style={{ color: C.muted }}>
+                  <p className="text-[11px] font-body mt-1" style={{ color: C.muted }}>
                     {optimizeMode === "middle" ? "Searching the average of everyone's location." : "Shifting the search toward whoever's farthest out."}
                   </p>
                 </>
               )}
 
               {manualOverride && (
-                <p className="text-[10px] font-body mt-1" style={{ color: C.muted }}>
+                <p className="text-[11px] font-body mt-1" style={{ color: C.muted }}>
                   Searching a set area. <button onClick={() => { setManualOverride(false); setShowCity(false); }} style={{ color: C.amber }}>Use the group's location</button>
                 </p>
               )}
@@ -523,13 +523,13 @@ export default function NextStopMultiplayer({ onHome }) {
               {showCity && (
                 <div className="mt-2 flex gap-2">
                   <input value={cityInput} onChange={(e) => setCityInput(e.target.value)} placeholder="City or address"
-                    className="flex-1 font-body text-[13px] px-3 py-2 rounded-lg outline-none"
+                    className="flex-1 font-body text-[14px] px-3 py-2 rounded-lg outline-none"
                     style={{ backgroundColor: C.card, color: C.cream, border: `1px solid ${C.hairline}` }} />
                   <button onClick={() => { if (cityInput.trim()) { setCity(cityInput); setManualOverride(true); setShowCity(false); } }}
-                    className="px-3 py-2 rounded-lg font-display font-semibold text-[12px]" style={{ backgroundColor: C.maroon, color: C.cream }}>Go</button>
+                    className="px-3 py-2 rounded-lg font-display font-semibold text-[13px]" style={{ backgroundColor: C.maroon, color: C.cream }}>Go</button>
                 </div>
               )}
-              {locError && <p className="text-[11px] font-body mt-1" style={{ color: "#FF9B9B" }}>{locError}</p>}
+              {locError && <p className="text-[12px] font-body mt-1" style={{ color: "#FF9B9B" }}>{locError}</p>}
             </div>
             <HostFilters
               filtersOpen={filtersOpen} setFiltersOpen={setFiltersOpen} cuisines={cuisines}
@@ -546,7 +546,7 @@ export default function NextStopMultiplayer({ onHome }) {
                 style={loading || hostPool.length === 0 ? { backgroundColor: "#3A3D42", color: "#7A7F87" } : { backgroundColor: C.maroon, color: C.cream }}>
                 <RotateCw size={16} className={loading ? "animate-spin" : ""} /> {loading ? "LOADING…" : hostPool.length === 0 ? "NO MATCHES — ADJUST FILTERS" : "START SPINNING"}
               </button>
-              <p className="text-center text-[10px] font-mono mt-2" style={{ color: C.muted }}>everyone votes on their own phone</p>
+              <p className="text-center text-[11px] font-mono mt-2" style={{ color: C.muted }}>everyone votes on their own phone</p>
             </div>
           </>
         ) : (
@@ -556,7 +556,7 @@ export default function NextStopMultiplayer({ onHome }) {
                 <RotateCw size={24} style={{ color: C.amber }} />
               </div>
               <p className="font-display text-lg font-semibold" style={{ color: C.cream }}>You're in the room</p>
-              <p className="text-[13px] font-body mt-1" style={{ color: C.creamDim }}>Waiting for the host to spin. Candidates will pop up here for everyone at once.</p>
+              <p className="text-[14px] font-body mt-1" style={{ color: C.creamDim }}>Waiting for the host to spin. Candidates will pop up here for everyone at once.</p>
             </div>
             <Roster players={r.players} count={playerCount} />
           </>
@@ -570,10 +570,10 @@ export default function NextStopMultiplayer({ onHome }) {
       <Frame>
         <RoomHeader label={r.code} connected="LIVE" />
         <div className="px-5 pt-8 pb-3 text-center">
-          <p className="font-mono text-[11px] tracking-widest uppercase" style={{ color: C.amber }}>Spinning…</p>
+          <p className="font-mono text-[12px] tracking-widest uppercase" style={{ color: C.amber }}>Spinning…</p>
         </div>
         <div className="px-5 pb-4"><SpinTiles candidates={r.room?.candidates || []} /></div>
-        <p className="px-5 pb-8 text-center text-[12px] font-body" style={{ color: C.creamDim }}>
+        <p className="px-5 pb-8 text-center text-[13px] font-body" style={{ color: C.creamDim }}>
           Picking three spots for the group — get ready to vote.
         </p>
       </Frame>
@@ -589,7 +589,7 @@ export default function NextStopMultiplayer({ onHome }) {
       <Frame>
         <RoomHeader label={r.code} connected="LIVE" />
         <div className="px-5 pt-4 pb-2">
-          <p className="flex items-center justify-between text-[11px] font-mono uppercase tracking-wide mb-3" style={{ color: C.muted }}>
+          <p className="flex items-center justify-between text-[12px] font-mono uppercase tracking-wide mb-3" style={{ color: C.muted }}>
             <span>Tap your pick</span>
             <span style={{ color: C.amber }}>{totalVotes}/{playerCount} voted</span>
           </p>
@@ -607,15 +607,15 @@ export default function NextStopMultiplayer({ onHome }) {
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
                         <CuisineIcon cuisine={c.cuisine} style={{ color: C.amber }} />
-                        <p className="font-display font-semibold text-[14px] truncate" style={{ color: C.cream }}>{c.name}</p>
+                        <p className="font-display font-semibold text-[15px] truncate" style={{ color: C.cream }}>{c.name}</p>
                       </div>
-                      <p className="text-[10px] font-mono mt-0.5" style={{ color: C.creamDim }}>{c.priceRange} &middot; {c.distance.toFixed(1)} mi &middot; {c.rating}★</p>
+                      <p className="text-[11px] font-mono mt-0.5" style={{ color: C.creamDim }}>{c.priceRange} &middot; {c.distance.toFixed(1)} mi &middot; {c.rating}★</p>
                       <button onClick={(e) => { e.stopPropagation(); setInfoPlace(c); }}
-                        className="mt-1 inline-flex items-center gap-1 text-[10px] font-mono" style={{ color: C.amber }}>
+                        className="mt-1 inline-flex items-center gap-1 text-[11px] font-mono" style={{ color: C.amber }}>
                         <Info size={11} /> More info
                       </button>
                     </div>
-                    <span className="flex items-center gap-1 text-[13px] font-display font-semibold shrink-0" style={{ color: mine ? C.cream : C.creamDim }}>
+                    <span className="flex items-center gap-1 text-[14px] font-display font-semibold shrink-0" style={{ color: mine ? C.cream : C.creamDim }}>
                       <ThumbsUp size={13} /> {count}
                     </span>
                   </div>
@@ -631,11 +631,11 @@ export default function NextStopMultiplayer({ onHome }) {
               style={{ backgroundColor: C.amber, color: C.flap }}>
               <Trophy size={15} /> LOCK IN WINNER
             </button>
-            <p className="text-center text-[10px] font-mono mt-2" style={{ color: C.muted }}>you can lock in anytime — highest votes wins</p>
+            <p className="text-center text-[11px] font-mono mt-2" style={{ color: C.muted }}>you can lock in anytime — highest votes wins</p>
           </div>
         )}
         {!r.isHost && (
-          <p className="px-5 pt-4 pb-6 text-center text-[11px] font-mono" style={{ color: C.muted }}>waiting for the host to lock in the winner…</p>
+          <p className="px-5 pt-4 pb-6 text-center text-[12px] font-mono" style={{ color: C.muted }}>waiting for the host to lock in the winner…</p>
         )}
         {infoPlace && <PlaceInfo place={infoPlace} onClose={() => setInfoPlace(null)} />}
       </Frame>
@@ -650,7 +650,7 @@ export default function NextStopMultiplayer({ onHome }) {
       <div className="px-5 pt-6 pb-2 flex flex-col items-center">
         <div className="flex items-center gap-1.5 mb-3">
           <Trophy size={16} style={{ color: C.amber }} />
-          <p className="font-mono text-[11px] tracking-widest uppercase" style={{ color: C.amber }}>The group picked</p>
+          <p className="font-mono text-[12px] tracking-widest uppercase" style={{ color: C.amber }}>The group picked</p>
         </div>
       </div>
       {w && (
@@ -660,27 +660,27 @@ export default function NextStopMultiplayer({ onHome }) {
             <div className="flex items-start gap-2">
               <CuisineIcon cuisine={w.cuisine} size={18} style={{ color: C.amber, marginTop: 4 }} />
               <div>
-                <p className="font-mono text-[10px] tracking-widest uppercase" style={{ color: C.amber }}>Winner</p>
+                <p className="font-mono text-[11px] tracking-widest uppercase" style={{ color: C.amber }}>Winner</p>
                 <h2 className="font-display text-xl font-bold leading-tight mt-0.5" style={{ color: C.cream }}>{w.name}</h2>
               </div>
             </div>
-            <div className="flex items-center gap-3 mt-2 text-[12px] font-body" style={{ color: C.creamDim }}>
+            <div className="flex items-center gap-3 mt-2 text-[13px] font-body" style={{ color: C.creamDim }}>
               <span className="flex items-center gap-1"><Star size={12} style={{ fill: C.amberStar, color: C.amberStar }} />{w.rating} ({w.ratingCount})</span>
               <span className="font-mono">{w.priceRange}/person</span>
               <span>{w.distance?.toFixed(1)} mi</span>
             </div>
-            <p className="text-[12px] mt-1.5" style={{ color: C.creamDim }}>{w.address}</p>
+            <p className="text-[13px] mt-1.5" style={{ color: C.creamDim }}>{w.address}</p>
             <div className="flex gap-2 mt-3">
-              <a href={`tel:${w.phone}`} className="flex-1 flex items-center justify-center gap-1.5 text-[12px] font-display font-medium py-2 rounded-md" style={{ backgroundColor: C.flap, color: C.cream }}>
+              <a href={`tel:${w.phone}`} className="flex-1 flex items-center justify-center gap-1.5 text-[13px] font-display font-medium py-2 rounded-md" style={{ backgroundColor: C.flap, color: C.cream }}>
                 <Phone size={13} /> Call
               </a>
               <a href={directionsUrl(w.name, w.address)} target="_blank" rel="noreferrer"
-                className="flex-1 flex items-center justify-center gap-1.5 text-[12px] font-display font-medium py-2 rounded-md" style={{ backgroundColor: C.maroon, color: C.cream }}>
+                className="flex-1 flex items-center justify-center gap-1.5 text-[13px] font-display font-medium py-2 rounded-md" style={{ backgroundColor: C.maroon, color: C.cream }}>
                 <Navigation size={13} /> Directions
               </a>
             </div>
             <button onClick={() => setInfoPlace(w)}
-              className="w-full mt-2 flex items-center justify-center gap-1.5 text-[12px] font-display font-medium py-2 rounded-md"
+              className="w-full mt-2 flex items-center justify-center gap-1.5 text-[13px] font-display font-medium py-2 rounded-md"
               style={{ backgroundColor: C.fill, color: C.cream, border: `1px solid ${C.hairline}` }}>
               <Info size={13} /> More info about this spot
             </button>
@@ -692,13 +692,13 @@ export default function NextStopMultiplayer({ onHome }) {
           <button onClick={() => hostPool.length && r.spin(hostPool)} className="w-full flex items-center justify-center gap-2 font-display font-semibold py-3 rounded-lg text-sm active:scale-[0.98] transition-transform" style={{ backgroundColor: C.maroon, color: C.cream }}>
             <RotateCw size={15} /> SPIN AGAIN
           </button>
-          <button onClick={r.resetToLobby} className="w-full flex items-center justify-center gap-2 font-display font-medium py-2.5 rounded-lg text-[13px]" style={{ backgroundColor: C.fill, color: C.creamDim, border: `1px solid ${C.hairline}` }}>
+          <button onClick={r.resetToLobby} className="w-full flex items-center justify-center gap-2 font-display font-medium py-2.5 rounded-lg text-[14px]" style={{ backgroundColor: C.fill, color: C.creamDim, border: `1px solid ${C.hairline}` }}>
             Back to lobby
           </button>
         </div>
       )}
       {!r.isHost && (
-        <p className="px-5 pt-2 pb-6 text-center text-[11px] font-mono" style={{ color: C.muted }}>the host can spin again from here</p>
+        <p className="px-5 pt-2 pb-6 text-center text-[12px] font-mono" style={{ color: C.muted }}>the host can spin again from here</p>
       )}
       {infoPlace && <PlaceInfo place={infoPlace} onClose={() => setInfoPlace(null)} />}
     </Frame>
@@ -708,9 +708,9 @@ export default function NextStopMultiplayer({ onHome }) {
 function NameField({ name, setName }) {
   return (
     <div>
-      <p className="text-[11px] font-mono uppercase tracking-wide mb-2" style={{ color: "#7C93C4" }}>Your name</p>
+      <p className="text-[12px] font-mono uppercase tracking-wide mb-2" style={{ color: "#7C93C4" }}>Your name</p>
       <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Sam"
-        className="w-full font-body text-[15px] px-3 py-2.5 rounded-lg outline-none"
+        className="w-full font-body text-[16px] px-3 py-2.5 rounded-lg outline-none"
         style={{ backgroundColor: "#173063", color: "#F4F7FF", border: "1px solid rgba(255,255,255,0.10)" }} />
     </div>
   );
