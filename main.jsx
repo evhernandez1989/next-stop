@@ -1,5 +1,6 @@
 import { useState } from "react";
 import TipBar from "./TipBar";
+import InstallHint from "./InstallHint";
 import ReactDOM from "react-dom/client";
 import { Users, User, MapPin, ChevronRight, ChevronsRight, Dices } from "lucide-react";
 import SoloRoulette from "./SoloRoulette.jsx";
@@ -14,34 +15,34 @@ const C = {
 
 function HomeScreen({ onSolo, onGroup }) {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center py-8 px-3" style={{ backgroundColor: C.page }}>
+    <div className="min-h-screen w-full flex items-center justify-center px-0 py-0 sm:px-3 sm:py-8" style={{ backgroundColor: C.page }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Roboto+Mono:wght@500;700&family=Inter:wght@400;500;600&display=swap');
         .font-display { font-family: 'Oswald', sans-serif; }
         .font-mono { font-family: 'Roboto Mono', monospace; }
         .font-body { font-family: 'Inter', sans-serif; }
       `}</style>
-      <div className="relative w-full max-w-[400px] rounded-[2.2rem] shadow-2xl overflow-hidden font-body"
+      <div className="relative w-full max-w-none sm:max-w-[420px] rounded-none sm:rounded-[2.2rem] shadow-2xl overflow-hidden font-body"
         style={{ backgroundColor: C.shell, border: `6px solid ${C.shellBorder}`, minHeight: 640 }}>
         <div className="px-5 pt-10 pb-6 flex flex-col items-center text-center">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4" style={{ backgroundColor: C.maroon }}>
             <Dices size={30} style={{ color: C.cream }} />
           </div>
           <h1 className="font-display text-4xl font-bold tracking-tight leading-none" style={{ color: C.cream }}>NEXT STOP</h1>
-          <p className="font-mono text-[11px] mt-2 tracking-widest uppercase" style={{ color: C.amber }}>Restaurant Roulette</p>
-          <p className="flex items-center gap-1 text-[12px] mt-3" style={{ color: C.muted }}>
+          <p className="font-mono text-[12px] mt-2 tracking-widest uppercase" style={{ color: C.amber }}>Restaurant Roulette</p>
+          <p className="flex items-center gap-1 text-[13px] mt-3" style={{ color: C.muted }}>
             <MapPin size={12} /> Restaurants near you
           </p>
         </div>
         <div className="px-5 pb-8">
-          <p className="text-[11px] font-mono uppercase tracking-wide mb-3" style={{ color: C.muted }}>How do you want to decide?</p>
+          <p className="text-[12px] font-mono uppercase tracking-wide mb-3" style={{ color: C.muted }}>How do you want to decide?</p>
           <button onClick={onSolo}
             className="w-full flex items-center gap-3 px-4 py-4 rounded-xl mb-3 active:translate-x-[2px] active:translate-y-[2px] transition-transform"
             style={{ backgroundColor: C.card, color: C.cream, border: "2.5px solid #FFFFFF", boxShadow: "4px 4px 0 rgba(0,0,0,0.55)" }}>
             <User size={22} />
             <span className="flex-1 text-left">
-              <span className="block font-display font-bold text-[16px] uppercase tracking-wide leading-tight">Just me</span>
-              <span className="block text-[11px] font-body font-semibold leading-tight mt-0.5" style={{ color: C.amber }}>Spin solo with filters &amp; skips</span>
+              <span className="block font-display font-bold text-[18px] uppercase tracking-wide leading-tight">Just me</span>
+              <span className="block text-[12px] font-body font-semibold leading-tight mt-0.5" style={{ color: C.amber }}>Spin solo with filters &amp; skips</span>
             </span>
             <ChevronsRight size={20} />
           </button>
@@ -50,17 +51,18 @@ function HomeScreen({ onSolo, onGroup }) {
             style={{ backgroundColor: C.card, color: C.cream, border: "2.5px solid #FFFFFF", boxShadow: "4px 4px 0 rgba(0,0,0,0.55)" }}>
             <Users size={22} />
             <span className="flex-1 text-left">
-              <span className="block font-display font-bold text-[16px] uppercase tracking-wide leading-tight">With a group</span>
-              <span className="block text-[11px] font-body font-semibold leading-tight mt-0.5" style={{ color: C.amber }}>Everyone joins &amp; votes from their phone</span>
+              <span className="block font-display font-bold text-[18px] uppercase tracking-wide leading-tight">With a group</span>
+              <span className="block text-[12px] font-body font-semibold leading-tight mt-0.5" style={{ color: C.amber }}>Everyone joins &amp; votes from their phone</span>
             </span>
             <ChevronsRight size={20} />
           </button>
           <div className="mt-8 rounded-xl p-3" style={{ backgroundColor: C.fill }}>
-            <p className="text-[12px] font-body leading-snug" style={{ color: C.creamDim }}>
+            <p className="text-[13px] font-body leading-snug" style={{ color: C.creamDim }}>
               Solo picks instantly on this phone. Group mode gives you a room link others scan or tap to join — then the whole table votes together.
             </p>
           </div>
 
+          <InstallHint />
           <TipBar />
         </div>
       </div>
