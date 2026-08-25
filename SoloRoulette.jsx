@@ -45,13 +45,13 @@ const C = {
   card: "#173063",
   board: "#0E1B3D",
   flap: "#0A1330",
-  amber: "#E23636",
+  amber: "#FFF04D",
   amberStar: "#F0C808",
   cream: "#F4F7FF",
   creamDim: "#B9CBF0",
   muted: "#7C93C4",
-  maroon: "#E23636",
-  maroonDeep: "#7A1515",
+  maroon: "#FFF04D",
+  maroonDeep: "#0E1B3D",
   hairline: "rgba(90,150,255,0.20)",
   hairlineSoft: "rgba(90,150,255,0.10)",
   fill: "rgba(90,150,255,0.10)",
@@ -157,7 +157,7 @@ function Flap({ char }) {
 function SpinningTicket({ card, tick }) {
   return (
     <div className="rounded-xl overflow-hidden shadow-lg relative" style={{ backgroundColor: C.card, border: `1px solid ${C.hairline}` }}>
-      <div className="absolute top-0 left-0 right-0 h-2" style={{ background: "repeating-linear-gradient(90deg,#E23636 0 8px,transparent 8px 16px)" }} />
+      <div className="absolute top-0 left-0 right-0 h-2" style={{ background: "repeating-linear-gradient(90deg,#2F6BFF 0 8px,transparent 8px 16px)" }} />
       <div className="p-4 pt-5" style={{ perspective: "700px" }}>
         <p className="font-mono text-[11px] tracking-widest uppercase mb-2" style={{ color: C.amber }}>Drawing your ticket…</p>
         <div key={tick} style={{ animation: "cardflip 90ms ease-out" }} className="flex items-center gap-2">
@@ -213,7 +213,7 @@ function VoteCard({ r, votes, onVote }) {
       <button
         onClick={onVote}
         className="flex items-center gap-1 text-[12px] font-display font-semibold px-2.5 py-1.5 rounded-md shrink-0 active:scale-95 transition-transform"
-        style={{ backgroundColor: C.maroon, color: C.cream }}
+        style={{ backgroundColor: C.maroon, color: "#12285C" }}
       >
         <ThumbsUp size={11} /> {votes}
       </button>
@@ -408,7 +408,7 @@ export default function SoloRoulette({ onHome }) {
   }
 
   // reusable inline styles for the two chip states
-  const chipOn = { backgroundColor: C.maroon, border: `1px solid ${C.maroon}`, color: C.cream };
+  const chipOn = { backgroundColor: C.maroon, border: `1px solid ${C.maroon}`, color: "#12285C" };
   const chipOff = { backgroundColor: "transparent", border: `1px solid ${C.hairline}`, color: C.creamDim };
 
   return (
@@ -459,7 +459,7 @@ export default function SoloRoulette({ onHome }) {
                 <button
                   onClick={() => { setCity(cityInput); setShowCity(false); }}
                   className="px-3 py-2 rounded-lg font-display font-semibold text-[13px]"
-                  style={{ backgroundColor: C.maroon, color: C.cream }}
+                  style={{ backgroundColor: C.maroon, color: "#12285C" }}
                 >Go</button>
                 <button
                   onClick={() => { useMyLocation(); setShowCity(false); }}
@@ -649,7 +649,7 @@ export default function SoloRoulette({ onHome }) {
               onTouchMove={onPointerMove}
               onTouchEnd={onPointerUp}
             >
-              <div className="absolute top-0 left-0 right-0 h-2" style={{ background: "repeating-linear-gradient(90deg,#E23636 0 8px,transparent 8px 16px)" }} />
+              <div className="absolute top-0 left-0 right-0 h-2" style={{ background: "repeating-linear-gradient(90deg,#2F6BFF 0 8px,transparent 8px 16px)" }} />
               <div className="p-4 pt-5">
                 <div className="flex justify-between items-start">
                   <div className="flex items-start gap-2">
@@ -683,7 +683,7 @@ export default function SoloRoulette({ onHome }) {
                     href={directionsUrl(result.name, result.address)}
                     target="_blank" rel="noreferrer" onClick={chooseThisPlace}
                     className="flex-1 flex items-center justify-center gap-1.5 text-[13px] font-display font-medium py-2 rounded-md"
-                    style={{ backgroundColor: C.maroon, color: C.cream }}>
+                    style={{ backgroundColor: C.maroon, color: "#12285C" }}>
                     <Navigation size={13} /> Directions
                   </a>
                   <button onClick={reroll}
@@ -712,7 +712,7 @@ export default function SoloRoulette({ onHome }) {
             className="w-full flex items-center justify-center gap-2 font-display font-semibold tracking-wide py-3 rounded-lg text-sm active:scale-[0.98] transition-transform"
             style={loading || pool.length === 0 || spinning
               ? { backgroundColor: "#3A3D42", color: "#7A7F87" }
-              : { backgroundColor: C.maroon, color: C.cream }}
+              : { backgroundColor: C.maroon, color: "#12285C" }}
           >
             <RotateCw size={16} className={spinning || loading ? "animate-spin" : ""} />
             {loading ? "LOADING…" : pool.length === 0 ? "NO MATCHES \u2014 ADJUST FILTERS" : spinning ? "SPINNING..." : "SPIN"}
