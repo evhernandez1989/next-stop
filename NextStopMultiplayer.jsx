@@ -388,12 +388,16 @@ export default function NextStopMultiplayer({ onHome }) {
               onClick={async () => { if (name.trim()) await r.createRoom(name.trim()); }}
               disabled={!name.trim() || r.busy}
               className="w-full flex items-center justify-between px-4 py-4 rounded-xl mt-4 mb-3 active:scale-[0.98] transition-transform"
-              style={name.trim() && !r.busy ? { backgroundColor: C.maroon, color: C.cream } : { backgroundColor: "#3A3D42", color: "#7A7F87" }}>
+              style={name.trim() && !r.busy
+                ? { backgroundColor: C.maroon, color: C.cream }
+                : { backgroundColor: "#C4C9D2", color: "#5B6272", border: "1px solid rgba(11,16,32,0.25)" }}>
               <span className="flex items-center gap-3">
                 <Users size={20} />
                 <span className="text-left">
                   <span className="block font-display font-semibold text-[15px] leading-tight">Start a group session</span>
-                  <span className="block text-[11px] font-body leading-tight" style={{ color: "#E8D5D5" }}>Host a room, share the link</span>
+                  <span className="block text-[11px] font-body leading-tight" style={{ color: name.trim() && !r.busy ? "#E8D5D5" : "#6B7280" }}>
+                    {r.busy ? "Starting…" : name.trim() ? "Host a room, share the link" : "Enter your name above to start"}
+                  </span>
                 </span>
               </span>
               <ChevronRight size={18} />
