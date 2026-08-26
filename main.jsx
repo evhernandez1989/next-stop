@@ -4,6 +4,7 @@ import ReactDOM from "react-dom/client";
 import { Users, User, MapPin, ChevronRight, ChevronsRight, Dices } from "lucide-react";
 import SoloRoulette from "./SoloRoulette.jsx";
 import NextStopMultiplayer from "./NextStopMultiplayer.jsx";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import "./index.css";
 
 const C = {
@@ -78,7 +79,12 @@ function App() {
   return <HomeScreen onSolo={() => setMode("solo")} onGroup={() => setMode("group")} />;
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+ReactDOM.createRoot(document.getElementById("root")).render(
+  <>
+    <App />
+    <SpeedInsights />
+  </>
+);
 
 // Register the service worker so the app is installable (Add to Home Screen).
 if ("serviceWorker" in navigator) {
