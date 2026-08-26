@@ -205,8 +205,8 @@ export default async function handler(req, res) {
       cuisines.length
         ? cuisines.map((c) => textSearchRestaurants(key, origin, radiusMeters, CUISINE_QUERY[c] || `${c} restaurant`))
         : [
-            ...DISTANCE_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types, "DISTANCE")),
-            ...POPULAR_GROUPS.map((types) => nearbyByType(key, origin, radiusMeters, types, "POPULARITY")),
+            nearbyByType(key, origin, radiusMeters, ["restaurant", "cafe", "coffee_shop", "bakery", "bar", "meal_takeaway", "fast_food_restaurant"], "DISTANCE"),
+            nearbyByType(key, origin, radiusMeters, ["restaurant"], "POPULARITY"),
             textSearchRestaurants(key, origin, radiusMeters, "restaurants"),
           ]
     );
