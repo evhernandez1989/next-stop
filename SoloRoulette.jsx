@@ -798,7 +798,7 @@ export default function SoloRoulette({ onHome }) {
                 <div className="flex items-center gap-2 text-[14px] font-display font-medium" style={{ color: C.amber }}>
                   <EyeOff size={14} /> Never show again
                 </div>
-                <p className="text-[12px] font-body ml-6" style={{ color: "#E8D5D5" }}>Hide for good. Undo anytime under Hidden spots.</p>
+                <p className="text-[12px] font-body ml-6" style={{ color: C.creamDim }}>Hide for good. Undo anytime under Hidden spots.</p>
               </button>
             </div>
           </div>
