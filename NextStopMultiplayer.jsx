@@ -395,7 +395,7 @@ export default function NextStopMultiplayer({ onHome }) {
                 <Users size={20} />
                 <span className="text-left">
                   <span className="block font-display font-semibold text-[16px] leading-tight">Start a group session</span>
-                  <span className="block text-[12px] font-body leading-tight" style={{ color: name.trim() && !r.busy ? "#E8D5D5" : "#6B7280" }}>
+                  <span className="block text-[12px] font-body leading-tight" style={{ color: name.trim() && !r.busy ? "#1E3A6B" : "#6B7280" }}>
                     {r.busy ? "Starting…" : name.trim() ? "Host a room, share the link" : "Enter your name above to start"}
                   </span>
                 </span>
