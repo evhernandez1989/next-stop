@@ -21,6 +21,12 @@ export function useRestaurants({ cuisines = [], radiusMi } = {}) {
   // Last place we searched, so a filter change can re-run the same location.
   const lastRef = useRef(null); // { lat, lng, label }
 
+  // Cache results per location+filters so repeat spins / re-filters don't re-hit Google.
+  const cacheRef = useRef(new Map());
+  const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+  const cacheKey = (lat, lng) =>
+    `${(+lat).toFixed(3)},${(+lng).toFixed(3)}|${cuisinesRef.current}|${radiusRef.current || ""}`;
+
   const buildQS = (base) => {
     const parts = [base];
     if (radiusRef.current) parts.push(`radius=${Math.round(radiusRef.current * 1609)}`);
@@ -30,12 +36,24 @@ export function useRestaurants({ cuisines = [], radiusMi } = {}) {
 
   const fetchByCoords = useCallback(async (lat, lng, lbl) => {
     lastRef.current = { lat, lng, label: lbl };
+    const ck = cacheKey(lat, lng);
+    const hit = cacheRef.current.get(ck);
+    if (hit && Date.now() - hit.ts < CACHE_TTL) {
+      setRestaurants(hit.data);
+      setLabel(lbl || "Near you");
+      setNeedCity(false);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true); setError(null);
     try {
       const res = await fetch(`/api/restaurants?${buildQS(`lat=${lat}&lng=${lng}`)}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Couldn't load restaurants.");
-      setRestaurants(data.restaurants || []);
+      const list = data.restaurants || [];
+      cacheRef.current.set(ck, { data: list, ts: Date.now() });
+      setRestaurants(list);
       setLabel(lbl || "Near you");
       setNeedCity(false);
     } catch (e) {
@@ -78,12 +96,13 @@ export function useRestaurants({ cuisines = [], radiusMi } = {}) {
   // Locate once on mount.
   useEffect(() => { useMyLocation(); }, [useMyLocation]);
 
-  // Re-query when the filters (cuisines / distance) change.
+  // Re-query when the filters (cuisines / distance) change — debounced so
+  // rapid chip toggling fires one search instead of one per tap.
   useEffect(() => {
-    if (lastRef.current) {
-      const { lat, lng, label: lbl } = lastRef.current;
-      fetchByCoords(lat, lng, lbl);
-    }
+    if (!lastRef.current) return;
+    const { lat, lng, label: lbl } = lastRef.current;
+    const t = setTimeout(() => fetchByCoords(lat, lng, lbl), 700);
+    return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cuisinesKey, radiusMi]);
 
