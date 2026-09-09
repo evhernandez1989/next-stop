@@ -2,6 +2,8 @@
 // The app calls /api/restaurants?lat=..&lng=..  (or ?city=..) and gets a
 // clean, deduped list of nearby food spots across many categories.
 
+import { rateLimited } from "./_rateLimit.js";
+
 const PRICE_EST = { 1: 10, 2: 19, 3: 30 };
 
 function priceFromLevel(level) {
@@ -145,6 +147,8 @@ async function textSearchRestaurants(key, origin, radiusMeters, query) {
 }
 
 export default async function handler(req, res) {
+  if (rateLimited(req, res, "restaurants")) return;
+
   const key = process.env.GOOGLE_PLACES_KEY;
   if (!key) return res.status(500).json({ error: "Server missing GOOGLE_PLACES_KEY" });
 

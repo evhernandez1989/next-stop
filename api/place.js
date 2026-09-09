@@ -2,7 +2,11 @@
 // Called only when a user taps "More info", so the pricier review/atmosphere
 // data isn't fetched for every restaurant in the list.
 
+import { rateLimited } from "./_rateLimit.js";
+
 export default async function handler(req, res) {
+  if (rateLimited(req, res, "place")) return;
+
   const key = process.env.GOOGLE_PLACES_KEY;
   if (!key) return res.status(500).json({ error: "Server missing GOOGLE_PLACES_KEY" });
 
