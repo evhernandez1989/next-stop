@@ -59,34 +59,6 @@ function haversineMiles(a, b) {
   return R * 2 * Math.asin(Math.sqrt(h));
 }
 
-// Query several categories so we don't miss cafes, ice cream, bakeries, etc.
-// Each call returns up to 20 of that type; ranked by DISTANCE so close-by
-// local spots win instead of distant popular chains.
-// Closest-first passes — fill the pool with what's genuinely nearby.
-// Closest-first passes from the user's location.
-const DISTANCE_GROUPS = [
-  ["restaurant"],
-  ["cafe", "coffee_shop"],
-  ["bakery", "ice_cream_shop"],
-  ["bar", "pub"],
-  ["meal_takeaway", "fast_food_restaurant"],
-];
-
-// Popularity + cuisine passes — surface well-known and specialty local spots
-// that aren't in the nearest 20.
-const POPULAR_GROUPS = [
-  ["restaurant"],
-  ["mexican_restaurant"],
-  ["chinese_restaurant", "vietnamese_restaurant"],
-  ["japanese_restaurant", "sushi_restaurant", "ramen_restaurant"],
-  ["korean_restaurant", "thai_restaurant", "indonesian_restaurant"],
-  ["italian_restaurant", "pizza_restaurant"],
-  ["indian_restaurant", "middle_eastern_restaurant", "mediterranean_restaurant"],
-  ["american_restaurant", "hamburger_restaurant", "barbecue_restaurant"],
-  ["breakfast_restaurant", "brunch_restaurant"],
-  ["sandwich_shop", "seafood_restaurant", "steak_house"],
-];
-
 const FIELD_MASK = [
   "places.id",
   "places.displayName",
@@ -178,7 +150,14 @@ export default async function handler(req, res) {
 
   try {
     let { lat, lng, city, radius } = req.query;
-    const cuisines = (req.query.cuisines || "").split(",").map((s) => s.trim()).filter(Boolean);
+    // Cap the fan-out: each cuisine costs one billed Google Text Search call,
+    // so an uncapped list lets a single request trigger unbounded spend.
+    const MAX_CUISINES = 6;
+    const cuisines = (req.query.cuisines || "")
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean)
+      .slice(0, MAX_CUISINES);
     const radiusMeters = Math.min(50000, Math.max(1000, Number(radius) || 40000));
 
     if ((!lat || !lng) && city) {

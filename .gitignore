@@ -1,0 +1,17 @@
+# Environment — never commit real keys. This repo is public.
+.env
+.env.*
+!env.example
+
+# Dependencies & build output
+node_modules/
+dist/
+.vite/
+
+# Tooling
+.vercel/
+*.log
+npm-debug.log*
+
+# macOS
+.DS_Store

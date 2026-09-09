@@ -11,36 +11,53 @@ scale.
 ```
 index.html                 app shell
 vite.config.js             build config
+tailwind.config.js         Tailwind setup
 package.json               dependencies
-.env.example               copy to .env.local and fill in
-supabase/schema.sql        run this once in your Supabase project
-src/
-  main.jsx                 entry point
-  NextStopMultiplayer.jsx  all screens (entry, lobby, voting, reveal)
-  lib/
-    supabase.js            Supabase client (reads env vars)
-    deviceId.js            stable per-device id (one player / one vote)
-    restaurants.js         snapshot data + helpers (swap for live Places later)
-    useRoom.js             all the realtime logic (create/join/spin/vote/lock-in)
+env.example                copy to .env.local and fill in
+schema.sql                 run this once in your Supabase project
+
+main.jsx                   entry point
+NextStopMultiplayer.jsx    multiplayer screens (entry, lobby, voting, reveal)
+SoloRoulette.jsx           single-player mode
+PlaceInfo.jsx              "More info" detail panel for one restaurant
+TipBar.jsx                 hint bar
+InstallHint.jsx            PWA "add to home screen" prompt
+supabase.js                Supabase client (reads env vars)
+deviceId.js                stable per-device id (one player / one vote)
+restaurants.js             static fallback data + cuisine options
+useRoom.js                 all the realtime logic (create/join/spin/vote/lock-in)
+useRestaurants.js          fetches live results from /api/restaurants
+
+api/
+  restaurants.js           serverless: Google Places search, key stays server-side
+  place.js                 serverless: on-demand detail for one place
+
+public/                    PWA manifest, service worker, icons
 ```
+
+Note: the project is intentionally flat — there is no `src/` directory.
+
 
 ## Setup (about 15 minutes)
 
 ### 1. Create a Supabase project
 - Sign up at supabase.com (free), create a new project.
 - When it's ready, open **SQL Editor**, paste the contents of
-  `supabase/schema.sql`, and click **Run**. That creates the `rooms`, `players`,
+  `schema.sql`, and click **Run**. That creates the `rooms`, `players`,
   and `votes` tables, turns on realtime for them, and sets permissive
   policies for launch.
 
 ### 2. Get your keys
-- Supabase → **Project Settings → API**. Copy the **Project URL** and the
-  **anon public** key.
-- Copy `.env.example` to `.env.local` and paste them in:
+- Supabase → **Project Settings → API Keys**. Copy the **Project URL** and the
+  **publishable** key.
+- Copy `env.example` to `.env.local` and paste them in:
   ```
   VITE_SUPABASE_URL=https://yourproject.supabase.co
-  VITE_SUPABASE_ANON_KEY=eyJ...
+  VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_...
   ```
+  The variable must be named `VITE_SUPABASE_PUBLISHABLE_KEY` — that is what
+  `supabase.js` reads. An older `VITE_SUPABASE_ANON_KEY` will be ignored and the
+  app will load blank with a console warning.
 
 ### 3. Run it locally
 ```
@@ -54,8 +71,11 @@ open it on your phone and laptop at the same time.
 ### 4. Deploy to Vercel
 - Push this folder to a GitHub repo.
 - On vercel.com → **Add New Project** → import the repo. Vite is auto-detected.
-- Before deploying, add the two environment variables (`VITE_SUPABASE_URL`,
-  `VITE_SUPABASE_ANON_KEY`) under the project's **Environment Variables**.
+- Before deploying, add three environment variables under the project's
+  **Environment Variables**:
+  - `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` — sent to the browser
+  - `GOOGLE_PLACES_KEY` — **server-side only.** Do not give it a `VITE_` prefix;
+    that would inline it into the public bundle. The `api/` routes read it.
 - Deploy. Your live URL (e.g. `next-stop.vercel.app`) is what the room links and
   QR codes point to.
 
@@ -70,13 +90,22 @@ open it on your phone and laptop at the same time.
   vote and can change their mind). **Lock in** tallies the votes, writes the
   winner, and flips status to `revealed` for everyone.
 
-## Turning the snapshot into live data (later)
+## Live restaurant data
 
-`src/lib/restaurants.js` currently ships a fixed list near Ingalls, IN. To go
-live, replace `loadRestaurants()` with a call to a small serverless function
-(e.g. a Vercel function) that calls the Google Places **Nearby Search** API with
-your key kept server-side, and returns results in the same shape. Nothing else
-in the app needs to change.
+This is already built. `api/restaurants.js` is a Vercel serverless function that
+calls the Google Places API with `GOOGLE_PLACES_KEY` kept server-side, dedupes
+results, sorts them by distance, and returns at most 120. `api/place.js` fetches
+richer detail (reviews, hours, phone) for a single place when someone taps
+"More info". `useRestaurants.js` consumes both.
+
+`restaurants.js` still ships a static fallback list near Ingalls, IN, and exports
+`CUISINE_OPTIONS`, `DATA`, `DEFAULT_TIERS`, and `pickN`, which the UI imports.
+
+**Cost note:** one `/api/restaurants` call without a `cuisines` filter issues
+three billed Google Places calls; with a filter it issues one per cuisine, capped
+at six. Both routes are public and unauthenticated, so set a billing cap and a
+daily quota limit in Google Cloud Console, and add rate limiting before promoting
+the app anywhere.
 
 ## Before a wider launch
 
