@@ -28,6 +28,7 @@ const MAX_PER_INSTANCE = 300;
 const ALLOWED_HOSTS = new Set([
   "www.nextstoprr.com",
   "nextstoprr.com",
+  "next-stop-ckq4.vercel.app", // the project's own alias; it serves the full app
   "localhost",
   "127.0.0.1",
 ]);
@@ -36,11 +37,23 @@ const hits = new Map(); // ip -> array of timestamps
 let instanceWindowStart = Date.now();
 let instanceCount = 0;
 
+// Prefer the headers Vercel sets itself. It also overwrites X-Forwarded-For,
+// but relying on that ties the limiter to one host's behaviour: behind any
+// proxy that appends instead, the leftmost entry is whatever the caller sent,
+// and a fresh fake IP per request would get a fresh bucket every time. If
+// X-Forwarded-For is all there is, take the rightmost entry, the one the
+// nearest proxy appended.
 function clientIp(req) {
+  const first = (v) => (Array.isArray(v) ? v[0] : v);
+  const set = (v) => typeof v === "string" && v.trim().length > 0;
+  const vercel = first(req.headers["x-vercel-forwarded-for"]);
+  if (set(vercel)) return vercel.split(",")[0].trim();
+  const real = first(req.headers["x-real-ip"]);
+  if (set(real)) return real.trim();
   const fwd = req.headers["x-forwarded-for"];
-  if (typeof fwd === "string" && fwd.length) return fwd.split(",")[0].trim();
-  if (Array.isArray(fwd) && fwd.length) return String(fwd[0]).trim();
-  return req.headers["x-real-ip"] || "unknown";
+  const chain = Array.isArray(fwd) ? fwd.join(",") : fwd;
+  if (set(chain)) return chain.split(",").map((s) => s.trim()).filter(Boolean).pop();
+  return "unknown";
 }
 
 // Drop stale entries so a long-lived warm instance doesn't grow forever.
